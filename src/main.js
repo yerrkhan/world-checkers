@@ -17,6 +17,7 @@ const router = createRouter({
     { path: '/register', component: () => import('./pages/Register.vue') },
     { path: '/tournaments', component: () => import('./pages/Tournaments.vue') },
     { path: '/friend',      component: () => import('./pages/FriendLobby.vue') },
+    { path: '/premium',     component: () => import('./pages/Premium.vue') },
   ]
 })
 

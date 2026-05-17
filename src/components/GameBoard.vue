@@ -2,6 +2,9 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RussianCheckers } from '../game/russianCheckers.js'
 import { supabase, pushMove, subscribeRoom } from '../supabase.js'
+import { useI18n } from '../i18n.js'
+
+const { t } = useI18n()
 
 const props = defineProps({
   boardTheme:    { type: String, default: 'classic' },
@@ -32,9 +35,28 @@ const validMoveTargets = ref([])
 const lastMove = ref(null)
 const timers = ref({ white: props.timeControl.seconds, black: props.timeControl.seconds })
 const botDepth = computed(() => {
-  if (props.botDifficulty === 'easy') return 1
-  if (props.botDifficulty === 'hard') return 5
-  return 3  // medium
+  if (props.botDifficulty === 'easy') return 2
+  if (props.botDifficulty === 'hard') return 7
+  return 4  // medium
+})
+
+// Piece advantage
+const pieceCounts = computed(() => {
+  let white = 0, black = 0
+  for (const row of board.value) {
+    for (const cell of row) {
+      if (!cell) continue
+      if (cell.color === 'white') white++
+      else black++
+    }
+  }
+  return { white, black }
+})
+const pieceAdv = computed(() => {
+  const { white, black } = pieceCounts.value
+  const diff = black - white
+  if (diff === 0) return null
+  return { side: diff > 0 ? 'black' : 'white', diff: Math.abs(diff) }
 })
 const humanColor = computed(() => props.playerSide === 'black' ? 'black' : 'white')
 
@@ -305,19 +327,28 @@ defineExpose({ resetGame, moveHistory, gameStatus })
       background:var(--bg-secondary); border-radius:8px; border:1px solid var(--border);
     ">
       <span style="font-weight:600; font-size:15px;">
-        {{ botThinking ? '🤖 Bot is thinking...' : statusMsg }}
+        {{ botThinking ? t.game.botThinking : statusMsg }}
       </span>
     </div>
 
-    <!-- Black timer -->
+    <!-- Black timer (top = opponent when humanColor=white) -->
     <div v-if="!noTimer" :style="{
       width: 'min(520px, 90vw)', padding:'6px 16px', borderRadius:'8px', fontWeight:'700', fontSize:'20px',
       background: currentTurn==='black' && gameStatus==='playing' ? '#333' : 'var(--bg-surface)',
       color: currentTurn==='black' && gameStatus==='playing' ? 'white' : 'var(--text-secondary)',
       border: '2px solid ' + (timers.black < 30 ? '#e74c3c' : 'transparent'),
-      transition: 'all 0.3s', display:'flex', justifyContent:'space-between',
+      transition: 'all 0.3s', display:'flex', justifyContent:'space-between', alignItems:'center',
     }">
-      <span>⚫ {{ gameMode === 'vsBot' && playerSide === 'white' ? 'Bot (Black)' : 'Black' }}</span>
+      <span style="display:flex;align-items:center;gap:8px;">
+        ⚫
+        <span style="font-size:0.85rem;font-weight:600;opacity:0.75;">
+          {{ pieceCounts.black }}
+          <span v-if="pieceAdv && pieceAdv.side==='black'" style="
+            background:rgba(76,175,80,0.2);color:#4caf50;border:1px solid rgba(76,175,80,0.4);
+            border-radius:4px;padding:1px 5px;font-size:0.7rem;font-weight:800;margin-left:3px;
+          ">+{{ pieceAdv.diff }}</span>
+        </span>
+      </span>
       <span>{{ formatTime(timers.black) }}</span>
     </div>
 
@@ -376,16 +407,25 @@ defineExpose({ resetGame, moveHistory, gameStatus })
       background: currentTurn==='white' && gameStatus==='playing' ? '#e8e8e8' : 'var(--bg-surface)',
       color: currentTurn==='white' && gameStatus==='playing' ? '#111' : 'var(--text-secondary)',
       border: '2px solid ' + (timers.white < 30 ? '#e74c3c' : 'transparent'),
-      transition:'all 0.3s', display:'flex', justifyContent:'space-between',
+      transition:'all 0.3s', display:'flex', justifyContent:'space-between', alignItems:'center',
     }">
-      <span>⬜ {{ gameMode === 'vsBot' && playerSide === 'white' ? 'White (You)' : 'White' }}</span>
+      <span style="display:flex;align-items:center;gap:8px;">
+        ⬜{{ (props.gameMode==='vsBot' && props.playerSide==='white') ? t.game.youLabel : '' }}
+        <span style="font-size:0.85rem;font-weight:600;opacity:0.7;">
+          {{ pieceCounts.white }}
+          <span v-if="pieceAdv && pieceAdv.side==='white'" style="
+            background:rgba(76,175,80,0.2);color:#4caf50;border:1px solid rgba(76,175,80,0.4);
+            border-radius:4px;padding:1px 5px;font-size:0.7rem;font-weight:800;margin-left:3px;
+          ">+{{ pieceAdv.diff }}</span>
+        </span>
+      </span>
       <span>{{ formatTime(timers.white) }}</span>
     </div>
 
     <!-- Buttons -->
     <div style="display:flex; gap:10px; margin-top:4px;">
-      <button @click="resetGame" class="btn-secondary" style="font-size:13px; padding:7px 18px;">↺ New Game</button>
-      <button v-if="gameStatus !== 'playing'" @click="resetGame" class="btn-primary" style="font-size:13px; padding:7px 18px;">Play Again</button>
+      <button @click="resetGame" class="btn-secondary" style="font-size:13px; padding:7px 18px;">{{ t.game.newGameBtn }}</button>
+      <button v-if="gameStatus !== 'playing'" @click="resetGame" class="btn-primary" style="font-size:13px; padding:7px 18px;">{{ t.game.playAgainBtn }}</button>
     </div>
 
     <!-- Move history -->
@@ -394,7 +434,7 @@ defineExpose({ resetGame, moveHistory, gameStatus })
       border:1px solid var(--border); border-radius:8px;
       padding:10px 14px; max-height:100px; overflow-y:auto;
     ">
-      <div style="font-size:11px; font-weight:700; color:var(--text-secondary); margin-bottom:5px; letter-spacing:0.05em;">MOVE HISTORY</div>
+      <div style="font-size:11px; font-weight:700; color:var(--text-secondary); margin-bottom:5px; letter-spacing:0.05em;">{{ t.game.moveHistory }}</div>
       <div style="display:flex; flex-wrap:wrap; gap:4px;">
         <span v-for="(move, i) in moveHistory" :key="i"
           style="font-size:11px; font-family:monospace; background:var(--bg-surface); padding:2px 6px; border-radius:4px;">
@@ -421,10 +461,10 @@ defineExpose({ resetGame, moveHistory, gameStatus })
           fontSize:'20px', fontWeight:'800', marginBottom:'3px',
           color: matchResult.winner==='white_wins' ? '#aaa' : '#555',
         }">
-          {{ matchResult.winner === 'white_wins' ? '⬜ White wins' : '⚫ Black wins' }}
+          {{ matchResult.winner === 'white_wins' ? t.game.whiteWins : t.game.blackWins }}
         </div>
         <div style="font-size:13px; color:var(--text-secondary); margin-bottom:22px;">
-          {{ matchResult.reason === 'time' ? 'on time' : 'by blocking all moves' }}
+          {{ matchResult.reason === 'time' ? t.game.reportByTime : t.game.reportByBlocking }}
         </div>
 
         <!-- Coach message -->
@@ -453,7 +493,7 @@ defineExpose({ resetGame, moveHistory, gameStatus })
               display:flex; align-items:center; justify-content:center;
               font-size:20px; font-weight:800; color:#27ae60;
             ">{{ matchStats.best }}</div>
-            <div style="font-size:11px; color:var(--text-secondary); font-weight:600;">Best</div>
+            <div style="font-size:11px; color:var(--text-secondary); font-weight:600;">{{ t.game.reportBest }}</div>
           </div>
           <div style="text-align:center;">
             <div style="
@@ -462,7 +502,7 @@ defineExpose({ resetGame, moveHistory, gameStatus })
               display:flex; align-items:center; justify-content:center;
               font-size:20px; font-weight:800; color:#3498db;
             ">{{ matchStats.excellent }}</div>
-            <div style="font-size:11px; color:var(--text-secondary); font-weight:600;">Excellent</div>
+            <div style="font-size:11px; color:var(--text-secondary); font-weight:600;">{{ t.game.reportExcellent }}</div>
           </div>
           <div style="text-align:center;">
             <div style="
@@ -471,7 +511,7 @@ defineExpose({ resetGame, moveHistory, gameStatus })
               display:flex; align-items:center; justify-content:center;
               font-size:20px; font-weight:800; color:#e74c3c;
             ">{{ matchStats.mistakes }}</div>
-            <div style="font-size:11px; color:var(--text-secondary); font-weight:600;">Mistakes</div>
+            <div style="font-size:11px; color:var(--text-secondary); font-weight:600;">{{ t.game.reportMistakes }}</div>
           </div>
         </div>
 
@@ -483,12 +523,17 @@ defineExpose({ resetGame, moveHistory, gameStatus })
           display:flex; align-items:center; gap:10px;
         ">
           <span style="font-size:20px; flex-shrink:0;">🔒</span>
-          <div>
-            <div style="font-size:13px; font-weight:700; margin-bottom:2px;">Full Game Report</div>
-            <div style="font-size:12px; color:var(--text-secondary);">
-              Upgrade to PRO for move-by-move analysis and improvement tips.
-            </div>
+          <div style="flex:1;">
+            <div style="font-size:13px; font-weight:700; margin-bottom:2px;">{{ t.game.reportFullAnalysis }}</div>
+            <div style="font-size:12px; color:var(--text-secondary);">{{ t.game.reportUpgradePro }}</div>
           </div>
+          <RouterLink to="/premium" @click="showMatchReport=false" style="
+            white-space:nowrap; font-size:0.78rem; font-weight:700;
+            color:var(--amber); text-decoration:none;
+            border:1px solid rgba(196,148,48,0.35);
+            border-radius:5px; padding:5px 10px;
+            flex-shrink:0;
+          ">{{ t.game.reportViewFull }}</RouterLink>
         </div>
 
         <!-- Action buttons -->
@@ -497,10 +542,10 @@ defineExpose({ resetGame, moveHistory, gameStatus })
             flex:1; padding:11px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600;
             border:1px solid var(--border); background:var(--bg-surface); color:var(--text-primary);
           ">
-            New {{ timeControl.type === 'bullet' ? '1' : timeControl.type === 'blitz' ? '3' : timeControl.type === 'rapid' ? '10' : '∞' }} min
+            {{ t.game.reportNewGame }}
           </button>
           <button @click="showMatchReport=false; resetGame()" class="btn-primary" style="flex:1; padding:11px; font-size:14px;">
-            Rematch
+            {{ t.game.reportRematch }}
           </button>
         </div>
       </div>

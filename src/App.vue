@@ -99,7 +99,7 @@ onMounted(async () => {
             </svg>
           </button>
           <div class="nav-sep"/>
-          <RouterLink to="/play" class="btn-upgrade">{{ t.nav.upgrade }}</RouterLink>
+          <RouterLink to="/premium" class="btn-upgrade">{{ t.nav.upgrade }}</RouterLink>
           <RouterLink to="/profile" class="user-chip">
             <span class="user-ava">{{ (user.email||'U')[0].toUpperCase() }}</span>
             <span class="user-name">{{ user.email?.split('@')[0] }}</span>

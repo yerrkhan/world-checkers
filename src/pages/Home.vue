@@ -487,7 +487,12 @@ onUnmounted(() => {
               {{ (yearly ? plan.yearlyPrice : plan.monthlyPrice).toLocaleString() }}
               <span class="price-unit">KZT/mo</span>
             </div>
-            <button class="price-btn" :class="{ 'price-btn-em': plan.highlight }">
+            <RouterLink v-if="plan.id !== 'free'" to="/premium"
+              class="price-btn" :class="{ 'price-btn-em': plan.highlight }"
+              style="text-decoration:none;display:block;text-align:center;">
+              {{ plan.cta }}
+            </RouterLink>
+            <button v-else class="price-btn" disabled style="opacity:0.6;cursor:default;">
               {{ plan.cta }}
             </button>
           </template>

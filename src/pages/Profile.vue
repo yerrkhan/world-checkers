@@ -220,9 +220,9 @@ const premiumFeatures = [
           </div>
         </div>
       </div>
-      <button class="btn-primary" style="font-weight:700; font-size:15px; padding:12px 32px;">
+      <RouterLink to="/premium" class="btn-primary" style="font-weight:700; font-size:15px; padding:12px 32px; text-decoration:none; display:inline-block;">
         {{ t.profile.upgradeBtn }}
-      </button>
+      </RouterLink>
     </div>
   </div>
 </template>

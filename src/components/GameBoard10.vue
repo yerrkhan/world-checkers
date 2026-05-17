@@ -6,6 +6,9 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Draughts10 } from '../game/draughts10.js'
 import { supabase, pushMove, subscribeRoom } from '../supabase.js'
+import { useI18n } from '../i18n.js'
+
+const { t } = useI18n()
 
 const props = defineProps({
   boardTheme:     { type: String, default: 'classic' },
@@ -46,7 +49,26 @@ let clockId   = null
 let roomChannel = null   // Supabase Realtime channel for friend mode
 
 // ─── Draw offer state ────────────────────────────────────────────────────
-const drawOffer = ref(null)  // { by: 'dark'|'light' } when opponent offers draw
+const drawOffer    = ref(null)   // { by: 'dark'|'light' } when opponent offers draw
+const drawOfferedByMe = ref(false) // track if we already offered
+
+// ─── Piece advantage ─────────────────────────────────────────────────────
+const pieceCounts = computed(() => {
+  let dark = 0, light = 0
+  for (const row of board.value) {
+    for (const cell of row) {
+      if (cell > 0) dark++
+      else if (cell < 0) light++
+    }
+  }
+  return { dark, light }
+})
+const pieceAdv = computed(() => {
+  const { dark, light } = pieceCounts.value
+  const diff = dark - light
+  if (diff === 0) return null
+  return { side: diff > 0 ? 'dark' : 'light', diff: Math.abs(diff) }
+})
 
 const fmt = s => {
   const m = Math.floor(s / 60), sec = s % 60
@@ -135,9 +157,9 @@ const endGame = (w, reason) => {
 
 // ─── Bot difficulty depth ─────────────────────────────────────────────────
 const botDepth = computed(() => {
-  if (props.botDifficulty === 'easy') return 1
-  if (props.botDifficulty === 'hard') return 5
-  return 3  // medium
+  if (props.botDifficulty === 'easy') return 2
+  if (props.botDifficulty === 'hard') return 7
+  return 4  // medium
 })
 
 // humanTurn: 'light' if player chose white, 'dark' if player chose black
@@ -232,6 +254,7 @@ const runBot = () => {
 // ─── Draw offer (friend mode only) ───────────────────────────────────────
 const offerDraw = () => {
   if (props.gameMode !== 'friend' || !props.roomId || status.value !== 'playing') return
+  drawOfferedByMe.value = true
   pushMove(props.roomId, { type: 'draw_offer', by: humanTurn.value }).catch(() => {})
 }
 const acceptDraw = () => {
@@ -335,13 +358,15 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
 
   <!-- Status bar -->
   <div class="status-bar">
-    <span v-if="botBusy">🤖 Bot thinking…</span>
+    <span v-if="botBusy">{{ t.game.botThinking }}</span>
     <span v-else-if="status==='playing'">
-      {{ syncedTurn === 'dark' ? '⚫ Black' : '⬜ White' }}'s turn
+      {{ syncedTurn === 'dark' ? t.game.turnBlack : t.game.turnWhite }}
     </span>
-    <span v-else-if="status==='draw'">🤝 Draw by agreement!</span>
-    <span v-else-if="status==='dark_wins'">⚫ Black wins!</span>
-    <span v-else>⬜ White wins!</span>
+    <span v-else-if="status==='draw'">{{ t.game.drawStatus }}</span>
+    <span v-else-if="status==='dark_wins'">{{ t.game.blackWins }}</span>
+    <span v-else>{{ t.game.whiteWins }}</span>
+    <!-- Draw offered by me indicator -->
+    <span v-if="drawOfferedByMe && status==='playing'" class="draw-offered-badge">{{ t.game.drawOffered }}</span>
   </div>
 
   <!-- Top clock (opponent) -->
@@ -350,7 +375,12 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
       active: syncedTurn !== humanTurn && status === 'playing',
       low: humanTurn === 'light' ? clocks.dark < 30 : clocks.light < 30
     }">
-    <span>{{ humanTurn === 'light' ? '⚫ Black' : '⬜ White' }}</span>
+    <span>{{ humanTurn === 'light' ? '⚫' : '⬜' }}</span>
+    <!-- piece count for opponent -->
+    <span class="clock-pieces">
+      {{ humanTurn === 'light' ? pieceCounts.dark : pieceCounts.light }}
+      <span v-if="pieceAdv && pieceAdv.side !== humanTurn" class="adv-chip">+{{ pieceAdv.diff }}</span>
+    </span>
     <span class="clock-time">{{ humanTurn === 'light' ? fmt(clocks.dark) : fmt(clocks.light) }}</span>
   </div>
 
@@ -400,19 +430,23 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
       active: syncedTurn === humanTurn && status === 'playing',
       low: humanTurn === 'light' ? clocks.light < 30 : clocks.dark < 30
     }">
-    <span>{{ humanTurn === 'light' ? '⬜ White' : '⚫ Black' }}{{ (gameMode==='vsBot' || gameMode==='friend') ? ' (You)' : '' }}</span>
+    <span>{{ humanTurn === 'light' ? '⬜' : '⚫' }}{{ (props.gameMode==='vsBot'||props.gameMode==='friend') ? t.game.youLabel : '' }}</span>
+    <span class="clock-pieces">
+      {{ humanTurn === 'light' ? pieceCounts.light : pieceCounts.dark }}
+      <span v-if="pieceAdv && pieceAdv.side === humanTurn" class="adv-chip">+{{ pieceAdv.diff }}</span>
+    </span>
     <span class="clock-time">{{ humanTurn === 'light' ? fmt(clocks.light) : fmt(clocks.dark) }}</span>
   </div>
 
   <!-- Buttons -->
   <div class="board-btns">
-    <button @click="resetGame" class="btn-secondary">↺ New Game</button>
-    <button v-if="status !== 'playing'" @click="resetGame" class="btn-primary">Play Again</button>
+    <button @click="resetGame" class="btn-secondary">{{ t.game.newGameBtn }}</button>
+    <button v-if="status !== 'playing'" @click="resetGame" class="btn-primary">{{ t.game.playAgainBtn }}</button>
   </div>
 
   <!-- Move history -->
   <div v-if="history.length" class="move-hist">
-    <div class="hist-label">MOVE HISTORY</div>
+    <div class="hist-label">{{ t.game.moveHistory }}</div>
     <div class="hist-moves">
       <span v-for="(m, i) in history" :key="i" class="hist-move">
         {{ i+1 }}. {{ colLabels[m.from.c] }}{{ 10-m.from.r }}→{{ colLabels[m.path[m.path.length-1].c] }}{{ 10-m.path[m.path.length-1].r }}
@@ -426,11 +460,11 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
   <div v-if="drawOffer" class="draw-overlay">
     <div class="draw-modal">
       <div class="draw-icon">🤝</div>
-      <div class="draw-title">Draw Offered</div>
-      <div class="draw-sub">Your opponent has offered a draw.</div>
+      <div class="draw-title">{{ t.game.drawOfferedTitle }}</div>
+      <div class="draw-sub">{{ t.game.drawOfferedSub }}</div>
       <div class="draw-btns">
-        <button @click="declineDraw" class="btn-secondary">Decline</button>
-        <button @click="acceptDraw" class="btn-primary">Accept Draw</button>
+        <button @click="declineDraw" class="btn-secondary">{{ t.game.drawDecline }}</button>
+        <button @click="acceptDraw" class="btn-primary">{{ t.game.drawAccept }}</button>
       </div>
     </div>
   </div>
@@ -442,11 +476,11 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
     <div class="report-card">
       <div class="report-result"
         :class="reportData.winner==='draw' ? 'draw-result' : reportData.winner==='dark' ? 'win' : 'loss'">
-        {{ reportData.winner==='draw' ? '🤝 Draw' : reportData.winner==='dark' ? '⚫ Black wins' : '⬜ White wins' }}
+        {{ reportData.winner==='draw' ? '🤝 ' + t.game.drawStatus.replace('🤝 ','') : reportData.winner==='dark' ? t.game.blackWins : t.game.whiteWins }}
       </div>
       <div class="report-reason">
-        {{ reportData.reason==='agreement' ? 'by mutual agreement'
-         : reportData.reason==='time' ? 'on time' : 'by blocking all moves' }}
+        {{ reportData.reason==='agreement' ? t.game.reportByAgreement
+         : reportData.reason==='time' ? t.game.reportByTime : t.game.reportByBlocking }}
       </div>
 
       <div class="coach-box">
@@ -457,29 +491,30 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
       <div class="report-stats">
         <div class="rstat green">
           <div class="rstat-n">{{ reportData.best }}</div>
-          <div class="rstat-l">Best</div>
+          <div class="rstat-l">{{ t.game.reportBest }}</div>
         </div>
         <div class="rstat blue">
           <div class="rstat-n">{{ reportData.excellent }}</div>
-          <div class="rstat-l">Excellent</div>
+          <div class="rstat-l">{{ t.game.reportExcellent }}</div>
         </div>
         <div class="rstat red">
           <div class="rstat-n">{{ reportData.mistakes }}</div>
-          <div class="rstat-l">Mistakes</div>
+          <div class="rstat-l">{{ t.game.reportMistakes }}</div>
         </div>
       </div>
 
       <div class="upgrade-bar">
         <span>🔒</span>
-        <div>
-          <div style="font-weight:700;font-size:.85rem;margin-bottom:2px;color:var(--text0);">Full Game Report</div>
-          <div style="font-size:.78rem;color:var(--text3);">Upgrade to PRO for move-by-move analysis.</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:.85rem;margin-bottom:2px;color:var(--text0);">{{ t.game.reportFullAnalysis }}</div>
+          <div style="font-size:.78rem;color:var(--text3);">{{ t.game.reportUpgradePro }}</div>
         </div>
+        <RouterLink to="/premium" @click="report=false" class="view-report-btn">{{ t.game.reportViewFull }}</RouterLink>
       </div>
 
       <div class="report-btns">
-        <button @click="report=false;resetGame()" class="btn-outline">New Game</button>
-        <button @click="report=false;resetGame()" class="btn-primary">Rematch</button>
+        <button @click="report=false;resetGame()" class="btn-outline">{{ t.game.reportNewGame }}</button>
+        <button @click="report=false;resetGame()" class="btn-primary">{{ t.game.reportRematch }}</button>
       </div>
     </div>
   </div>
@@ -529,6 +564,32 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
 .clock.low { border-color: var(--red) !important; }
 .clock.low .clock-time { color: var(--red); }
 .clock-time { font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+.clock-pieces {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.9rem; color: var(--text2); font-weight: 600;
+}
+.adv-chip {
+  background: rgba(76,175,80,0.18); color: #4caf50;
+  border: 1px solid rgba(76,175,80,0.4);
+  border-radius: 4px; padding: 1px 5px;
+  font-size: 0.72rem; font-weight: 800;
+}
+.draw-offered-badge {
+  font-size: 0.74rem; color: var(--amber);
+  background: rgba(196,148,48,0.12);
+  border: 1px solid rgba(196,148,48,0.3);
+  border-radius: 4px; padding: 2px 8px;
+  margin-left: auto;
+}
+.view-report-btn {
+  white-space: nowrap; font-size: 0.78rem; font-weight: 700;
+  color: var(--amber); text-decoration: none;
+  border: 1px solid rgba(196,148,48,0.35);
+  border-radius: 5px; padding: 5px 10px;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.view-report-btn:hover { background: rgba(196,148,48,0.1); }
 
 /* Board layout */
 .board-outer {
