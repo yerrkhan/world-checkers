@@ -17,8 +17,6 @@ const toggleTheme = () => {
   localStorage.setItem('wc_theme', lightMode.value ? 'light' : 'dark')
 }
 
-const RULES_PDF_URL = 'https://kksfgpjnrppifciagrfd.supabase.co/storage/v1/object/public/rules/checkers-rules.pdf'
-
 const navItems = computed(() => [
   { label: t.value.nav.lobby,       path: '/' },
   { label: t.value.nav.tournaments, path: '/tournaments' },
@@ -70,7 +68,6 @@ onMounted(async () => {
           active-class="nav-link-active"
           exact-active-class="nav-link-active"
         >{{ item.label }}</RouterLink>
-        <a :href="RULES_PDF_URL" target="_blank" rel="noopener" class="nav-link">{{ t.nav.rules }}</a>
       </div>
 
       <!-- Right: auth + language slider -->

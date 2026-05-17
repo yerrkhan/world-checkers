@@ -158,6 +158,9 @@ const submitPayment = () => {
       <div v-if="plan.id !== 'free' && billingCycle==='yearly'" class="billed-note">
         {{ t.premium.billed }}
       </div>
+      <div v-if="plan.id !== 'free'" class="plan-trial">
+        {{ t.premium.freeMonth }}
+      </div>
 
       <div class="plan-features">
         <div v-for="f in plan.features" :key="f.label" class="feat-row">
@@ -368,6 +371,18 @@ const submitPayment = () => {
 }
 .billed-note {
   font-size: 0.72rem; color: var(--text3); margin-top: -12px;
+}
+.plan-trial {
+  display: inline-flex;
+  align-self: flex-start;
+  background: var(--green);
+  color: var(--btn-ink);
+  border-radius: 3px;
+  padding: 4px 9px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-top: -8px;
 }
 
 /* Feature list */
