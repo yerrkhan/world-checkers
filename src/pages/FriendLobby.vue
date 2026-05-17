@@ -273,7 +273,7 @@ const tcLabel = computed(() => {
 
 .btn-copy {
   background: var(--amber);
-  color: #0b0e15;
+  color: var(--btn-ink);
   border: none;
   border-radius: 7px;
   padding: 10px 18px;
@@ -285,7 +285,7 @@ const tcLabel = computed(() => {
   flex-shrink: 0;
 }
 .btn-copy:hover { background: var(--amber-l); }
-.btn-copy.copied { background: var(--green); color: #fff; }
+.btn-copy.copied { background: var(--green); color: var(--paper); }
 
 /* Chips */
 .chips-row {

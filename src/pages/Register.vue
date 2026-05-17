@@ -243,7 +243,7 @@ const register = async () => {
 
 .btn-submit {
   background: var(--amber);
-  color: #000;
+  color: var(--btn-ink);
   border: none;
   padding: 13px;
   border-radius: 7px;

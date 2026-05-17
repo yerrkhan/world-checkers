@@ -378,11 +378,11 @@ defineExpose({ resetGame, moveHistory, gameStatus })
             <div v-if="board[rIdx]?.[cIdx]" :style="{
               width:'76%', height:'76%', borderRadius:'50%',
               background: board[rIdx][cIdx].color==='white'
-                ? 'radial-gradient(circle at 32% 30%, #ffffff, #d8d8d8)'
+                ? 'radial-gradient(circle at 32% 30%, var(--paper), #d8d8d8)'
                 : 'radial-gradient(circle at 32% 30%, #2e2e2e, #0a0a0a)',
               border: board[rIdx][cIdx].color==='white' ? '2px solid #bbb' : '2px solid #111',
               boxShadow: isSelected(rIdx, cIdx)
-                ? '0 0 0 3px #fff, 0 0 0 5px #6a9932'
+                ? '0 0 0 3px var(--paper), 0 0 0 5px #6a9932'
                 : board[rIdx][cIdx].color==='white'
                   ? '0 3px 8px rgba(0,0,0,0.4), inset 0 1px rgba(255,255,255,0.9)'
                   : '0 3px 8px rgba(0,0,0,0.9), inset 0 1px rgba(255,255,255,0.12)',

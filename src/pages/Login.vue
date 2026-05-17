@@ -70,7 +70,7 @@ const login = async () => {
 <style scoped>
 .auth-page {
   min-height: 100vh;
-  background: #000;
+  background: var(--btn-ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -99,14 +99,14 @@ const login = async () => {
 .auth-brand {
   font-weight: 900;
   font-size: 0.95rem;
-  color: #fff;
+  color: var(--paper);
   letter-spacing: 1.5px;
 }
 
 .auth-title {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--paper);
   text-align: center;
   margin: 0;
 }
@@ -135,7 +135,7 @@ const login = async () => {
 
 .btn-submit {
   background: #f5b623;
-  color: #000;
+  color: var(--btn-ink);
   border: none;
   padding: 13px;
   border-radius: 7px;

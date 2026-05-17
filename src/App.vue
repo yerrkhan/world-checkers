@@ -321,7 +321,7 @@ onMounted(async () => {
 /* Buttons */
 .btn-play {
   background: var(--amber);
-  color: #0b0e15;
+  color: var(--btn-ink);
   padding: 6px 16px;
   border-radius: 5px;
   font-weight: 700;
@@ -331,7 +331,7 @@ onMounted(async () => {
   transition: background 0.15s;
   letter-spacing: 0.2px;
 }
-.btn-play:hover { background: var(--amber-l); color: #0b0e15; }
+.btn-play:hover { background: var(--amber-l); color: var(--btn-ink); }
 
 .btn-upgrade {
   background: transparent;
@@ -398,7 +398,7 @@ onMounted(async () => {
   width: 26px; height: 26px;
   border-radius: 50%;
   background: var(--amber);
-  color: #0b0e15;
+  color: var(--btn-ink);
   display: flex; align-items: center; justify-content: center;
   font-weight: 800; font-size: 0.75rem;
   flex-shrink: 0;

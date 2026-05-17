@@ -107,7 +107,7 @@ liveGames.forEach((g, i) => {
 const cellBg  = (ri, ci) => (ri + ci) % 2 === 0 ? '#c8a96e' : '#6b4226'
 const pieceBg = (v) => v > 0
   ? 'radial-gradient(circle at 32% 30%, #2a2a2a, #0c0c0c)'
-  : 'radial-gradient(circle at 32% 30%, #fff, #dcdcdc)'
+  : 'radial-gradient(circle at 32% 30%, var(--paper), #dcdcdc)'
 const pieceBorder = (v) => v > 0 ? '1.5px solid #111' : '1.5px solid #bbb'
 const pieceShadow = (v) => v > 0
   ? '0 2px 5px rgba(0,0,0,.9), inset 0 1px rgba(255,255,255,.08)'
@@ -605,7 +605,7 @@ onUnmounted(() => {
 
 .btn-hero-primary {
   background: var(--amber);
-  color: #0b0e15;
+  color: var(--btn-ink);
   border: none;
   padding: 11px 24px;
   border-radius: 6px;
@@ -1069,7 +1069,7 @@ onUnmounted(() => {
   left: 50%;
   transform: translateX(-50%);
   background: var(--amber);
-  color: #0b0e15;
+  color: var(--btn-ink);
   font-size: 0.62rem;
   font-weight: 800;
   padding: 2px 10px;
@@ -1104,8 +1104,8 @@ onUnmounted(() => {
   font-family: inherit;
 }
 .price-btn:hover { border-color: var(--amber); color: var(--amber); }
-.price-btn-em { background: var(--amber); border-color: var(--amber); color: #0b0e15; }
-.price-btn-em:hover { background: var(--amber-l); color: #0b0e15; }
+.price-btn-em { background: var(--amber); border-color: var(--amber); color: var(--btn-ink); }
+.price-btn-em:hover { background: var(--amber-l); color: var(--btn-ink); }
 
 .price-footer {
   text-align: center;

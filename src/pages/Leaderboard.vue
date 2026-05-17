@@ -437,7 +437,7 @@ const kzPlayers = [
   text-transform: capitalize;
 }
 .tab-btn:hover { color: var(--text0); background: rgba(255,255,255,.04); }
-.tab-btn.active { background: var(--amber); color: #0b0e15; }
+.tab-btn.active { background: var(--amber); color: var(--btn-ink); }
 
 .rank-table { display: flex; flex-direction: column; }
 .rank-row {
@@ -515,7 +515,7 @@ const kzPlayers = [
 .cta-row { margin-top: 28px; text-align: center; }
 .cta-btn {
   display: inline-block;
-  background: var(--amber); color: #0b0e15;
+  background: var(--amber); color: var(--btn-ink);
   padding: 11px 24px; border-radius: 6px;
   font-weight: 700; font-size: .88rem;
   text-decoration: none; transition: background .15s;

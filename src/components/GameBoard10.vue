@@ -670,13 +670,13 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
   border: 2px solid #1a1a1a;
 }
 .piece-light {
-  background: radial-gradient(circle at 32% 30%, #ffffff, #d8d8d8);
+  background: radial-gradient(circle at 32% 30%, var(--paper), #d8d8d8);
   box-shadow: 0 3px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.9);
   border: 2px solid #bbb;
 }
 .piece.selected {
   transform: scale(1.12);
-  box-shadow: 0 0 0 3px #fff, 0 0 0 5px #5fa832;
+  box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px #5fa832;
 }
 .king-crown {
   font-size: 40%;
@@ -692,7 +692,7 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
   margin-top: 4px;
 }
 .btn-primary {
-  background: var(--amber); color: #000; border: none;
+  background: var(--amber); color: var(--btn-ink); border: none;
   padding: 8px 20px; border-radius: 6px;
   font-weight: 800; font-size: 0.88rem; cursor: pointer;
 }
@@ -708,7 +708,7 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
   padding: 10px; border-radius: 7px; cursor: pointer; font-size: 0.9rem;
   flex: 1; font-weight: 600;
 }
-.btn-outline:hover { border-color: #444; color: #fff; }
+.btn-outline:hover { border-color: #444; color: var(--paper); }
 
 /* Move history */
 .move-hist {

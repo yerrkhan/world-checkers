@@ -233,7 +233,7 @@ const startGame = () => {
 .start-btn {
   margin-top: 28px;
   width: 100%; max-width: 300px;
-  background: var(--amber); color: #000; border: none;
+  background: var(--amber); color: var(--btn-ink); border: none;
   padding: 14px; border-radius: 7px;
   font-weight: 800; font-size: .95rem; cursor: pointer;
   transition: background .15s; display: block;

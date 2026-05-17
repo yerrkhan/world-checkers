@@ -326,7 +326,7 @@ const today = computed(() => {
   left: 50%;
   transform: translateX(-50%);
   background: var(--red);
-  color: #fff;
+  color: var(--paper);
   font-size: .68rem;
   font-weight: 800;
   padding: 1px 6px;
@@ -365,7 +365,7 @@ const today = computed(() => {
   height: 64px;
   min-width: 80px;
   border: 1px solid var(--border2);
-  border-left-width: 3px;
+  border-left-width: 1px;
   border-radius: 0 10px 10px 0;
   padding: 6px 10px;
   cursor: pointer;
@@ -439,7 +439,7 @@ const today = computed(() => {
   margin-top: 10px;
   width: 100%;
   background: var(--amber);
-  color: #0b0e15;
+  color: var(--btn-ink);
   border: none;
   padding: 7px;
   border-radius: 5px;

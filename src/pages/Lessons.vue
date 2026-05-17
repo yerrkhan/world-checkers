@@ -290,7 +290,7 @@ const catStyle = (cat) => {
 }
 .progress-chip {
   background: var(--amber);
-  color: #0b0e15;
+  color: var(--btn-ink);
   padding: 5px 14px;
   border-radius: 20px;
   font-weight: 700;
@@ -365,7 +365,7 @@ const catStyle = (cat) => {
   width: 28px; height: 28px;
   border-radius: 50%;
   background: var(--amber);
-  color: #0b0e15;
+  color: var(--btn-ink);
   display: flex; align-items: center; justify-content: center;
   font-size: 0.78rem;
   font-weight: 700;

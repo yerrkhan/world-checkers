@@ -324,7 +324,7 @@ const submitPayment = () => {
 
 .popular-badge {
   position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-  background: var(--amber); color: #0b0e15;
+  background: var(--amber); color: var(--btn-ink);
   font-size: 0.68rem; font-weight: 800;
   padding: 3px 12px; border-radius: 10px;
   text-transform: uppercase; letter-spacing: 0.5px;
@@ -362,7 +362,7 @@ const submitPayment = () => {
   padding: 11px 16px; border-radius: 8px;
   font-size: 0.85rem; font-weight: 700;
   cursor: pointer; transition: all 0.15s;
-  border: none; color: #0b0e15;
+  border: none; color: var(--btn-ink);
   font-family: inherit;
 }
 .plan-btn-current {
@@ -445,7 +445,7 @@ const submitPayment = () => {
 
 .pay-submit-btn {
   width: 100%; padding: 13px;
-  background: var(--amber); color: #0b0e15;
+  background: var(--amber); color: var(--btn-ink);
   border: none; border-radius: 8px;
   font-size: 0.95rem; font-weight: 800;
   cursor: pointer; transition: background 0.15s;
@@ -465,7 +465,7 @@ const submitPayment = () => {
 .pay-success-icon { font-size: 3rem; }
 .pay-success-title { font-size: 1rem; font-weight: 700; color: var(--text0); text-align: center; }
 .pay-close-btn {
-  background: var(--amber); color: #0b0e15; border: none;
+  background: var(--amber); color: var(--btn-ink); border: none;
   border-radius: 8px; padding: 10px 28px; font-size: 0.9rem;
   font-weight: 800; cursor: pointer; font-family: inherit;
 }

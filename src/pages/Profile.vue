@@ -79,13 +79,13 @@ const premiumFeatures = [
         width:'80px', height:'80px', borderRadius:'50%',
         background: 'linear-gradient(135deg, var(--amber), var(--amber-d))',
         display:'flex', alignItems:'center', justifyContent:'center',
-        fontSize:'30px', fontWeight:'700', color:'#0b0e15', flexShrink:0,
+        fontSize:'30px', fontWeight:'700', color:'var(--btn-ink)', flexShrink:0,
       }">{{ fullName[0].toUpperCase() }}</div>
 
       <div style="flex:1;">
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
           <h1 style="font-size:22px; font-weight:700; color:var(--text0);">{{ fullName }}</h1>
-          <span v-if="user.isPremium" style="background:var(--amber); color:#0b0e15; padding:2px 10px; border-radius:10px; font-size:13px; font-weight:700;">PRO</span>
+          <span v-if="user.isPremium" style="background:var(--amber); color:var(--btn-ink); padding:2px 10px; border-radius:10px; font-size:13px; font-weight:700;">PRO</span>
           <span :style="{
             background: eloLevel.color + '22', color: eloLevel.color,
             border: '1px solid ' + eloLevel.color + '55',
@@ -151,7 +151,7 @@ const premiumFeatures = [
           position:'absolute', top:'-4px',
           left: 'calc(' + eloPercent + '% - 8px)',
           width:'16px', height:'16px', borderRadius:'50%',
-          background:'var(--amber)', border:'2px solid #0b0e15',
+          background:'var(--amber)', border:'2px solid var(--btn-ink)',
           boxShadow:'0 0 8px rgba(196,148,48,0.6)',
           transition:'left 0.4s',
         }"/>

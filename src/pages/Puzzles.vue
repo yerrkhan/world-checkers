@@ -463,9 +463,9 @@ const diffColor = (diff) => {
                   :style="{
                     background: cell > 0
                       ? 'radial-gradient(circle at 32% 30%, #2a2a2a, #0c0c0c)'
-                      : 'radial-gradient(circle at 32% 30%, #fff, #dcdcdc)',
+                      : 'radial-gradient(circle at 32% 30%, var(--paper), #dcdcdc)',
                     boxShadow: puzzleSel?.r===rIdx && puzzleSel?.c===cIdx
-                      ? '0 0 0 3px #fff, 0 0 0 5px #5fa832'
+                      ? '0 0 0 3px var(--paper), 0 0 0 5px #5fa832'
                       : cell > 0 ? '0 2px 6px rgba(0,0,0,.9)' : '0 2px 6px rgba(0,0,0,.4)',
                     border: cell > 0 ? '1.5px solid #111' : '1.5px solid #bbb',
                     transform: puzzleSel?.r===rIdx && puzzleSel?.c===cIdx ? 'scale(1.12)' : 'scale(1)',
@@ -538,7 +538,7 @@ const diffColor = (diff) => {
 }
 .progress-chip {
   background: var(--amber);
-  color: #0b0e15;
+  color: var(--btn-ink);
   padding: 5px 14px;
   border-radius: 20px;
   font-weight: 700;
@@ -601,7 +601,7 @@ const diffColor = (diff) => {
   width: 22px; height: 22px;
   border-radius: 50%;
   background: var(--amber);
-  color: #0b0e15;
+  color: var(--btn-ink);
   display: flex; align-items: center; justify-content: center;
   font-size: 0.7rem;
   font-weight: 800;
@@ -793,7 +793,7 @@ const diffColor = (diff) => {
 
 /* Buttons (shared) */
 .btn-primary {
-  background: var(--amber); color: #0b0e15; border: none;
+  background: var(--amber); color: var(--btn-ink); border: none;
   padding: 9px 18px; border-radius: 6px;
   font-weight: 800; font-size: 0.85rem; cursor: pointer;
   font-family: inherit;
