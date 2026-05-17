@@ -75,6 +75,10 @@ onMounted(async () => {
 
       <!-- Right: auth + language slider -->
       <div class="nav-right">
+        <RouterLink to="/premium" class="btn-upgrade-pro">
+          <span>{{ t.nav.upgradePro }}</span>
+          <span class="try-free-tag">{{ t.nav.tryFree }}</span>
+        </RouterLink>
         <!-- Language slider -->
         <div class="lang-sw">
           <span class="ls-lbl" :class="{ 'ls-on': lang === 'en' }" @click="setLang('en')">EN</span>
@@ -99,7 +103,6 @@ onMounted(async () => {
             </svg>
           </button>
           <div class="nav-sep"/>
-          <RouterLink to="/premium" class="btn-upgrade">{{ t.nav.upgrade }}</RouterLink>
           <RouterLink to="/profile" class="user-chip">
             <span class="user-ava">{{ (user.email||'U')[0].toUpperCase() }}</span>
             <span class="user-name">{{ user.email?.split('@')[0] }}</span>
@@ -156,6 +159,7 @@ onMounted(async () => {
           @click="mobileOpen=false"
         >{{ item.label }}</RouterLink>
         <hr class="drawer-hr">
+        <RouterLink to="/premium" class="drawer-link drawer-link-amber" @click="mobileOpen=false">{{ t.nav.upgradePro }} · {{ t.nav.tryFree }}</RouterLink>
         <RouterLink v-if="!user" to="/login"    class="drawer-link" @click="mobileOpen=false">{{ t.nav.login }}</RouterLink>
         <RouterLink v-if="!user" to="/register" class="drawer-link drawer-link-amber" @click="mobileOpen=false">{{ t.nav.signupFree }}</RouterLink>
         <RouterLink v-if="user"  to="/profile"  class="drawer-link" @click="mobileOpen=false">{{ t.nav.myProfile }}</RouterLink>
@@ -347,6 +351,39 @@ onMounted(async () => {
 }
 .btn-upgrade:hover { background: rgba(196,148,48,0.1); color: var(--amber-l); }
 
+.btn-upgrade-pro {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 13px;
+  border: 1px solid var(--amber);
+  border-radius: 4px;
+  color: var(--amber);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-upgrade-pro:hover {
+  background: rgba(196,148,48,0.12);
+  color: var(--amber-l);
+}
+.try-free-tag {
+  position: absolute;
+  right: -10px;
+  top: -13px;
+  transform: rotate(5deg);
+  background: var(--red);
+  color: var(--paper);
+  border-radius: 2px;
+  padding: 2px 7px;
+  font-size: 0.66rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
 .btn-ghost {
   background: transparent;
   border: none;
@@ -519,7 +556,8 @@ onMounted(async () => {
 @media (max-width: 900px) {
   .nav-links { display: none; }
   .btn-register { display: none; }
-  .btn-upgrade { display: none; }
+  .btn-upgrade,
+  .btn-upgrade-pro { display: none; }
   .hamburger { display: flex; }
 }
 @media (max-width: 600px) {

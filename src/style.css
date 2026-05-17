@@ -1445,84 +1445,6 @@ html body #app .delta-down {
   color: var(--red);
 }
 
-html body #app .puzzles-page {
-  max-width: none;
-  padding: 54px 24px 90px;
-}
-
-html body #app .page-head {
-  max-width: 1180px;
-  margin-inline: auto;
-  margin-bottom: 42px;
-}
-
-html body #app .page-title {
-  color: var(--paper);
-  font-size: 3.25rem;
-  font-style: italic;
-}
-
-html body #app .page-sub {
-  max-width: 880px;
-  color: var(--paper);
-  font-size: 1.45rem;
-  line-height: 1.35;
-}
-
-html body #app .puzzle-grid {
-  max-width: 1680px;
-  margin-inline: auto;
-  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
-  gap: 34px 20px;
-}
-
-html body #app .puzzle-card {
-  position: relative;
-  min-height: 420px;
-  padding: 282px 2px 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-}
-
-html body #app .puzzle-card::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 255px;
-  border: 1px solid oklch(27% 0.012 96);
-  background:
-    linear-gradient(135deg, color-mix(in oklch, var(--red), transparent 25%) 0 22%, transparent 22% 33%, color-mix(in oklch, var(--amber), transparent 26%) 33% 44%, transparent 44%),
-    repeating-conic-gradient(from 0deg, oklch(5.5% 0.008 132) 0% 25%, oklch(9% 0.01 132) 0% 50%) 0 0 / 64px 64px;
-}
-
-html body #app .puzzle-card::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 42%;
-  width: 18%;
-  height: 255px;
-  background: repeating-linear-gradient(135deg, transparent 0 8px, oklch(34% 0.012 92 / 0.7) 9px 11px);
-  opacity: 0.75;
-}
-
-html body #app .puzzle-card:hover {
-  border-color: transparent;
-  transform: none;
-}
-
-html body #app .puzzle-name,
-html body #app .puzzle-card h3 {
-  color: var(--paper);
-  font-size: 1.42rem;
-}
-
-html body #app .puzzle-desc,
-html body #app .puzzle-meta {
-  color: var(--paper);
-}
-
 html body #app .premium-page,
 html body #app .plans-grid,
 html body #app .price-table {
@@ -1590,19 +1512,6 @@ html body #app .price-per {
     font-size: 3rem;
   }
 
-  html body #app .page-title {
-    font-size: 2.55rem;
-  }
-
-  html body #app .puzzle-card {
-    min-height: 380px;
-    padding-top: 248px;
-  }
-
-  html body #app .puzzle-card::before,
-  html body #app .puzzle-card::after {
-    height: 224px;
-  }
 }
 
 @media (max-width: 620px) {
@@ -1631,8 +1540,7 @@ html body #app .price-per {
     font-size: 1.75rem;
   }
 
-  html body #app .t-sub,
-  html body #app .page-sub {
+  html body #app .t-sub {
     font-size: 1.08rem;
   }
 }

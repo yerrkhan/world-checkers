@@ -125,6 +125,7 @@ const submitPayment = () => {
   <!-- Header -->
   <div class="prem-header">
     <div class="prem-eyebrow">PREMIUM</div>
+    <div class="trial-badge">{{ t.premium.freeMonth }}</div>
     <h1 class="prem-title">{{ t.premium.title }}</h1>
     <p class="prem-sub">{{ t.premium.sub }}</p>
 
@@ -138,6 +139,7 @@ const submitPayment = () => {
         <span class="save-chip">{{ t.premium.save }}</span>
       </button>
     </div>
+    <p class="trial-note">{{ t.premium.trialNote }}</p>
   </div>
 
   <!-- Plans grid -->
@@ -212,6 +214,10 @@ const submitPayment = () => {
             <span>{{ t.premium.payBilling }}</span>
             <span>{{ billingCycle === 'yearly' ? t.premium.yearly : t.premium.monthly }}</span>
           </div>
+          <div class="pay-row trial-row">
+            <span>{{ t.premium.freeMonth }}</span>
+            <span>{{ t.premium.trialApplied }}</span>
+          </div>
           <div class="pay-row pay-total">
             <span>{{ t.premium.payTotal }}</span>
             <span class="pay-amount">{{ totalAmount }}</span>
@@ -268,6 +274,19 @@ const submitPayment = () => {
   font-size: 0.7rem; font-weight: 800; color: var(--amber);
   letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;
 }
+.trial-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green);
+  color: var(--btn-ink);
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
 .prem-title {
   font-size: 2rem; font-weight: 800; color: var(--text0);
   margin-bottom: 10px; letter-spacing: -0.3px;
@@ -282,6 +301,11 @@ const submitPayment = () => {
   display: inline-flex; gap: 0;
   background: var(--ink2); border: 1px solid var(--border);
   border-radius: 8px; padding: 3px;
+}
+.trial-note {
+  color: var(--text1);
+  font-size: 0.86rem;
+  margin-top: 12px;
 }
 .tog-btn {
   background: transparent; border: none; cursor: pointer;
@@ -420,6 +444,10 @@ const submitPayment = () => {
   font-size: 0.85rem; color: var(--text2);
 }
 .pay-total { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 2px; }
+.trial-row {
+  color: var(--green);
+  font-weight: 700;
+}
 .pay-plan-name { font-weight: 700; }
 .pay-amount { font-size: 1rem; font-weight: 800; color: var(--amber); }
 
