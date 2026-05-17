@@ -3,15 +3,17 @@
  * GameBoard10.vue — International Draughts (10×10) board UI
  * Uses Draughts10 engine from src/game/draughts10.js
  */
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Draughts10 } from '../game/draughts10.js'
+import { supabase, pushMove, subscribeRoom } from '../supabase.js'
 
 const props = defineProps({
   boardTheme:     { type: String, default: 'classic' },
-  gameMode:       { type: String, default: 'local' },   // 'local' | 'vsBot'
+  gameMode:       { type: String, default: 'local' },   // 'local' | 'vsBot' | 'friend'
   timeControl:    { type: Object, default: () => ({ type: 'rapid', seconds: 600 }) },
   botDifficulty:  { type: String, default: 'medium' },  // 'easy' | 'medium' | 'hard'
   playerSide:     { type: String, default: 'white' },   // 'white' | 'black'
+  roomId:         { type: String, default: null },      // for friend mode
 })
 const emit = defineEmits(['gameOver', 'moveMade'])
 
@@ -40,7 +42,8 @@ const noTimer = computed(() => props.timeControl.type === 'none')
 const clocks  = ref({ dark: props.timeControl.seconds, light: props.timeControl.seconds })
 const activeC = computed(() => syncedTurn.value)
 const syncedTurn = ref('dark')
-let clockId = null
+let clockId   = null
+let roomChannel = null   // Supabase Realtime channel for friend mode
 
 const fmt = s => {
   const m = Math.floor(s / 60), sec = s % 60
@@ -118,7 +121,7 @@ const humanTurn = computed(() => props.playerSide === 'black' ? 'dark' : 'light'
 // ─── Square click ─────────────────────────────────────────────────────────
 const clickSquare = (r, c) => {
   if (status.value !== 'playing') return
-  if (props.gameMode === 'vsBot' && syncedTurn.value !== humanTurn.value) return
+  if ((props.gameMode === 'vsBot' || props.gameMode === 'friend') && syncedTurn.value !== humanTurn.value) return
   if (botBusy.value) return
 
   const mySign = syncedTurn.value === 'dark' ? 1 : -1
@@ -147,18 +150,45 @@ const pickPiece = (r, c) => {
   })
 }
 
-const executeMove = (move) => {
+// Applies a move to the engine/board (shared by local, vsBot, and friend modes)
+const applyMove = (move) => {
   const dest = move.path[move.path.length - 1]
   lastMove.value = { from: move.from, to: dest }
   history.value.push(move)
   engine.value.makeMove(move)
   sel.value = null; targets.value = []
   refresh()
+}
+
+const executeMove = (move, fromOpponent = false) => {
+  applyMove(move)
   emit('moveMade', history.value)
-  // In vsBot mode trigger bot when it's not the human's turn
+
+  // Friend mode: push our move to Supabase (not opponent's echoed moves)
+  if (props.gameMode === 'friend' && props.roomId && !fromOpponent) {
+    pushMove(props.roomId, { from: move.from, path: move.path }).catch(() => {})
+  }
+
+  // vsBot: trigger bot when it's not the human's turn
   if (props.gameMode === 'vsBot' && syncedTurn.value !== humanTurn.value && status.value === 'playing') {
     botBusy.value = true
     setTimeout(runBot, 400 + Math.random() * 600)
+  }
+}
+
+// Apply an incoming opponent move from Supabase
+const applyOpponentMove = (moveData) => {
+  const engineMoves = engine.value.getState().moves
+  const dstR = moveData.path[moveData.path.length - 1].r
+  const dstC = moveData.path[moveData.path.length - 1].c
+  // Find matching legal move
+  const match = engineMoves.find(m =>
+    m.from.r === moveData.from.r && m.from.c === moveData.from.c &&
+    m.path[m.path.length - 1].r === dstR &&
+    m.path[m.path.length - 1].c === dstC
+  )
+  if (match) {
+    executeMove(match, true)  // fromOpponent=true → don't re-push to Supabase
   }
 }
 
@@ -212,8 +242,24 @@ onMounted(() => {
     botBusy.value = true
     setTimeout(runBot, 600)
   }
+  // Friend mode: subscribe to Supabase for opponent moves
+  if (props.gameMode === 'friend' && props.roomId) {
+    roomChannel = subscribeRoom(props.roomId, (newRoom) => {
+      const supabaseMoves = newRoom.moves || []
+      const localCount    = history.value.length
+      if (supabaseMoves.length > localCount) {
+        // New moves arrived — these are from the opponent
+        for (let i = localCount; i < supabaseMoves.length; i++) {
+          applyOpponentMove(supabaseMoves[i])
+        }
+      }
+    })
+  }
 })
-onUnmounted(stopClock)
+onUnmounted(() => {
+  stopClock()
+  if (roomChannel) supabase.removeChannel(roomChannel)
+})
 defineExpose({ resetGame, history, status })
 
 // ─── Column/Row labels ────────────────────────────────────────────────────
@@ -297,7 +343,7 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
       active: flipped ? (syncedTurn==='dark' && status==='playing') : (syncedTurn==='dark' && status==='playing'),
       low: flipped ? clocks.light < 30 : clocks.dark < 30
     }">
-    <span>{{ flipped ? '⬜ White' : '⚫ Black' }}{{ gameMode==='vsBot' ? ' (You)' : '' }}</span>
+    <span>{{ flipped ? '⬜ White' : '⚫ Black' }}{{ (gameMode==='vsBot' || gameMode==='friend') ? ' (You)' : '' }}</span>
     <span class="clock-time">{{ flipped ? fmt(clocks.light) : fmt(clocks.dark) }}</span>
   </div>
 
@@ -377,20 +423,20 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
 
 .status-bar {
   width: min(580px, 95vw);
-  background: #111;
-  border: 1px solid #1e1e1e;
+  background: var(--ink2);
+  border: 1px solid var(--border);
   border-radius: 7px;
   padding: 8px 16px;
   font-weight: 600;
   font-size: 0.92rem;
-  color: #ddd;
+  color: var(--text0);
 }
 
 /* Clocks */
 .clock {
   width: min(580px, 95vw);
-  background: #111;
-  border: 2px solid #1e1e1e;
+  background: var(--ink2);
+  border: 2px solid var(--border);
   border-radius: 7px;
   padding: 8px 16px;
   display: flex;
@@ -398,16 +444,16 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
   align-items: center;
   font-weight: 700;
   font-size: 1.1rem;
-  color: #666;
+  color: var(--text3);
   transition: all 0.3s;
 }
 .clock.active {
-  background: #1a1a1a;
-  border-color: #f5b623;
-  color: #fff;
+  background: var(--ink3);
+  border-color: var(--amber);
+  color: var(--text0);
 }
-.clock.low { border-color: #f44336 !important; }
-.clock.low .clock-time { color: #f44336; }
+.clock.low { border-color: var(--red) !important; }
+.clock.low .clock-time { color: var(--red); }
 .clock-time { font-size: 1.4rem; font-variant-numeric: tabular-nums; }
 
 /* Board layout */
@@ -511,19 +557,19 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
   margin-top: 4px;
 }
 .btn-primary {
-  background: #f5b623; color: #000; border: none;
+  background: var(--amber); color: #000; border: none;
   padding: 8px 20px; border-radius: 6px;
   font-weight: 800; font-size: 0.88rem; cursor: pointer;
 }
-.btn-primary:hover { background: #ffd740; }
+.btn-primary:hover { background: var(--amber-l); }
 .btn-secondary {
-  background: transparent; border: 1.5px solid #333; color: #ccc;
+  background: transparent; border: 1.5px solid var(--border2); color: var(--text1);
   padding: 8px 20px; border-radius: 6px;
   font-weight: 600; font-size: 0.88rem; cursor: pointer;
 }
-.btn-secondary:hover { border-color: #555; color: #fff; }
+.btn-secondary:hover { border-color: var(--border2); color: var(--text0); }
 .btn-outline {
-  background: transparent; border: 1px solid #2a2a2a; color: #ccc;
+  background: transparent; border: 1px solid var(--border2); color: var(--text1);
   padding: 10px; border-radius: 7px; cursor: pointer; font-size: 0.9rem;
   flex: 1; font-weight: 600;
 }

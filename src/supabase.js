@@ -64,6 +64,89 @@ export const signOut = async () => {
   if (error) throw error
 }
 
+// ── Friend Game Room Functions ──────────────────────────────────────────────
+// Requires a 'game_rooms' table in Supabase. Run this SQL in Supabase SQL Editor:
+//
+// CREATE TABLE IF NOT EXISTS game_rooms (
+//   id TEXT PRIMARY KEY,
+//   host_id TEXT,
+//   guest_id TEXT,
+//   variant TEXT DEFAULT 'international',
+//   time_control TEXT DEFAULT 'rapid',
+//   status TEXT DEFAULT 'waiting',
+//   moves JSONB DEFAULT '[]',
+//   winner TEXT,
+//   created_at BIGINT,
+//   last_move_at BIGINT
+// );
+// ALTER TABLE game_rooms ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY "Allow all" ON game_rooms FOR ALL USING (true) WITH CHECK (true);
+// -- Then enable Realtime for game_rooms in Supabase Dashboard → Database → Replication
+
+export const createRoom = async ({ userId, variant, timeControl }) => {
+  const id = Math.random().toString(36).substr(2, 8).toUpperCase()
+  const { data, error } = await supabase
+    .from('game_rooms')
+    .insert([{
+      id,
+      host_id: userId || 'anon',
+      variant: variant || 'international',
+      time_control: timeControl || 'rapid',
+      status: 'waiting',
+      moves: [],
+      created_at: Date.now(),
+      last_move_at: Date.now(),
+    }])
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export const joinRoom = async (roomId, userId) => {
+  const { data, error } = await supabase
+    .from('game_rooms')
+    .update({ guest_id: userId || 'anon', status: 'playing', last_move_at: Date.now() })
+    .eq('id', roomId)
+    .eq('status', 'waiting')
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export const getRoom = async (roomId) => {
+  const { data, error } = await supabase
+    .from('game_rooms')
+    .select('*')
+    .eq('id', roomId)
+    .single()
+  if (error) throw error
+  return data
+}
+
+export const pushMove = async (roomId, move) => {
+  const room = await getRoom(roomId)
+  const moves = [...(room.moves || []), { from: move.from, path: move.path, ts: Date.now() }]
+  const { error } = await supabase
+    .from('game_rooms')
+    .update({ moves, last_move_at: Date.now() })
+    .eq('id', roomId)
+  if (error) throw error
+}
+
+export const subscribeRoom = (roomId, callback) => {
+  return supabase
+    .channel(`room_${roomId}`)
+    .on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'game_rooms',
+      filter: `id=eq.${roomId}`,
+    }, (payload) => callback(payload.new))
+    .subscribe()
+}
+
 export const saveGame = async (whitePlayerId, blackPlayerId, winnerId, moves, timeControl) => {
   const { error } = await supabase
     .from('games')

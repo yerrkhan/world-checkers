@@ -67,6 +67,7 @@ const isLastMoveSq = (gid, ri, ci) => {
 
 /* ── Live clocks ── */
 const clocks = reactive({})
+const gameWinners = reactive({})   // { [gameId]: 'w' | 'b' } — set when clock hits 0
 liveGames.forEach(g => {
   const base  = parseInt(g.tc) * 60
   const seed  = g.id * 37
@@ -225,16 +226,22 @@ onMounted(() => {
   animateCount(48293, v => gamesPlayed.value      = v, 2200)
 
   const clockId = setInterval(() => {
-    // Tick the clock of the active player
+    // Tick the clock of the active player — only for games still running
     liveGames.forEach(g => {
+      if (gameWinners[g.id]) return   // game already finished
       const c = clocks[g.id]
       c[c.active]--
-      if (c[c.active] < 0) c[c.active] = 0
+      if (c[c.active] <= 0) {
+        c[c.active] = 0
+        // Clock hit zero → other player wins
+        gameWinners[g.id] = c.active === 'w' ? 'b' : 'w'
+      }
     })
     moveCounter++
     // Make a move every 3 seconds — THEN switch active player
     if (moveCounter % 3 === 0) {
       const game = liveGames[Math.floor(moveCounter / 3) % liveGames.length]
+      if (gameWinners[game.id]) return  // skip finished games
       const eng  = liveEngines[game.id]
       if (eng) {
         const s = eng.getState()
@@ -389,23 +396,32 @@ onUnmounted(() => {
       </div>
 
       <!-- Mini board -->
-      <div class="mini-board">
-        <template v-for="(row, ri) in miniBoards[game.id]" :key="ri">
-          <div v-for="(piece, ci) in row" :key="ri+'-'+ci"
-            class="mini-sq"
-            :class="{ 'mini-sq-move': isLastMoveSq(game.id, ri, ci) }"
-            :style="{ background: cellBg(ri, ci) }">
-            <div v-if="piece !== 0" class="mini-piece"
-              :style="{
-                background: pieceBg(piece),
-                border: pieceBorder(piece),
-                boxShadow: pieceShadow(piece)
-              }">
-              <span v-if="Math.abs(piece)===2" class="mini-crown"
-                :style="{ color: piece > 0 ? 'rgba(255,255,255,.7)' : 'rgba(0,0,0,.4)' }">♛</span>
+      <div class="mini-board-wrap">
+        <div class="mini-board">
+          <template v-for="(row, ri) in miniBoards[game.id]" :key="ri">
+            <div v-for="(piece, ci) in row" :key="ri+'-'+ci"
+              class="mini-sq"
+              :class="{ 'mini-sq-move': isLastMoveSq(game.id, ri, ci) }"
+              :style="{ background: cellBg(ri, ci) }">
+              <div v-if="piece !== 0" class="mini-piece"
+                :style="{
+                  background: pieceBg(piece),
+                  border: pieceBorder(piece),
+                  boxShadow: pieceShadow(piece)
+                }">
+                <span v-if="Math.abs(piece)===2" class="mini-crown"
+                  :style="{ color: piece > 0 ? 'rgba(255,255,255,.7)' : 'rgba(0,0,0,.4)' }">♛</span>
+              </div>
             </div>
-          </div>
-        </template>
+          </template>
+        </div>
+        <!-- Winner overlay when clock hits 0 -->
+        <div v-if="gameWinners[game.id]" class="winner-overlay">
+          <span class="winner-text">
+            {{ gameWinners[game.id] === 'w' ? '⬜ White wins' : '⚫ Black wins' }}
+          </span>
+          <span class="winner-reason">on time</span>
+        </div>
       </div>
 
       <div class="watch-cta">{{ t.home.watchGame }}</div>
@@ -856,12 +872,43 @@ onUnmounted(() => {
 .clock-black { background: #1a1a1a; border: 1px solid #444; }
 
 /* Mini board */
+.mini-board-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+}
 .mini-board {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(10, 1fr);
   border-radius: 4px;
   overflow: hidden;
-  aspect-ratio: 1;
+  width: 100%;
+  height: 100%;
+}
+.winner-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.72);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  backdrop-filter: blur(2px);
+}
+.winner-text {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--amber);
+  text-align: center;
+}
+.winner-reason {
+  font-size: 0.68rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
 }
 .mini-sq { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; position: relative; }
 .mini-sq-move::after {

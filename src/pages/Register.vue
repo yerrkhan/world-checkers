@@ -5,7 +5,7 @@ import { signUp } from '../supabase'
 import { useI18n } from '../i18n.js'
 
 const router   = useRouter()
-const { t } = useI18n()
+const { t, setLang } = useI18n()
 const firstName = ref('')
 const lastName  = ref('')
 const username = ref('')
@@ -71,6 +71,7 @@ const register = async () => {
   loading.value = true
   try {
     await signUp(email.value, password.value, username.value, { firstName: firstName.value, lastName: lastName.value })
+    setLang(language.value)  // Apply chosen language immediately
     success.value = t.value.register.successCreated
     setTimeout(() => router.push('/login'), 2500)
   } catch (err) {

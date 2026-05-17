@@ -59,6 +59,13 @@ const sides = computed(() => [
 
 const startGame = () => {
   if (!selectedMode.value) return
+
+  // Friend mode → go to lobby for invite link
+  if (selectedMode.value === 'friend') {
+    router.push(`/friend?variant=${selectedVariant.value}&tc=${selectedTC.value}`)
+    return
+  }
+
   // In pass&play (local) white always goes first — no side choice
   let side = selectedMode.value === 'local' ? 'white' : selectedSide.value
   if (side === 'random') side = Math.random() < 0.5 ? 'white' : 'black'
@@ -152,7 +159,7 @@ const startGame = () => {
     {{ selectedMode ? '▶ ' + t.play.startGame : t.play.selectMode }}
   </button>
 
-  <div v-if="selectedMode==='online' || selectedMode==='friend'" class="online-note">
+  <div v-if="selectedMode==='online'" class="online-note">
     {{ t.play.onlineNote }}
     <RouterLink to="/register">{{ t.play.signupFree }}</RouterLink>
   </div>
@@ -161,10 +168,10 @@ const startGame = () => {
 
 <style scoped>
 .play-page { max-width: 820px; margin: 0 auto; padding: 40px 24px 60px; }
-.play-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 4px; color: #fff; }
-.play-sub   { color: #666; font-size: .88rem; margin-bottom: 32px; }
+.play-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 4px; color: var(--text0); }
+.play-sub   { color: var(--text2); font-size: .88rem; margin-bottom: 32px; }
 .section-label {
-  font-size: .72rem; font-weight: 700; color: #555;
+  font-size: .72rem; font-weight: 700; color: var(--text3);
   letter-spacing: 1.5px; text-transform: uppercase;
   margin-bottom: 12px; margin-top: 28px;
 }
@@ -174,24 +181,24 @@ const startGame = () => {
 @media (max-width: 600px) { .variant-grid { grid-template-columns: 1fr; } }
 
 .variant-card {
-  background: #111; border: 2px solid #1e1e1e;
+  background: var(--ink2); border: 2px solid var(--border);
   border-radius: 10px; padding: 16px;
   cursor: pointer; transition: all .15s;
 }
-.variant-card:hover { border-color: #333; background: #141414; }
-.variant-card.selected { border-color: #f5b623; background: rgba(245,182,35,.05); }
+.variant-card:hover { border-color: var(--border2); background: var(--ink3); }
+.variant-card.selected { border-color: var(--amber); background: rgba(196,148,48,.06); }
 
 .vc-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .vc-icon { font-size: 1.6rem; flex-shrink: 0; }
 .vc-texts { flex: 1; }
-.vc-title { font-size: .92rem; font-weight: 700; color: #ddd; }
-.vc-sub   { font-size: .75rem; color: #555; }
+.vc-title { font-size: .92rem; font-weight: 700; color: var(--text0); }
+.vc-sub   { font-size: .75rem; color: var(--text3); }
 .vc-badge {
-  background: rgba(245,182,35,.15); border: 1px solid rgba(245,182,35,.3);
-  color: #f5b623; font-size: .65rem; font-weight: 800;
+  background: rgba(196,148,48,.15); border: 1px solid rgba(196,148,48,.3);
+  color: var(--amber); font-size: .65rem; font-weight: 800;
   padding: 2px 8px; border-radius: 10px; white-space: nowrap;
 }
-.vc-desc { font-size: .78rem; color: #666; line-height: 1.4; }
+.vc-desc { font-size: .78rem; color: var(--text2); line-height: 1.4; }
 
 /* Modes */
 .mode-grid {
@@ -200,44 +207,44 @@ const startGame = () => {
   gap: 10px;
 }
 .mode-card {
-  background: #111; border: 2px solid #1e1e1e;
+  background: var(--ink2); border: 2px solid var(--border);
   border-radius: 9px; padding: 16px;
   cursor: pointer; transition: all .15s;
 }
-.mode-card:hover { border-color: #333; background: #141414; }
-.mode-card.selected { border-color: #f5b623; background: rgba(245,182,35,.05); }
+.mode-card:hover { border-color: var(--border2); background: var(--ink3); }
+.mode-card.selected { border-color: var(--amber); background: rgba(196,148,48,.06); }
 .mc-icon  { font-size: 1.5rem; margin-bottom: 8px; }
-.mc-title { font-size: .88rem; font-weight: 700; color: #ddd; margin-bottom: 4px; }
-.mc-desc  { font-size: .75rem; color: #666; line-height: 1.4; }
+.mc-title { font-size: .88rem; font-weight: 700; color: var(--text0); margin-bottom: 4px; }
+.mc-desc  { font-size: .75rem; color: var(--text2); line-height: 1.4; }
 
 /* Time control */
 .tc-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .tc-btn {
-  background: #111; border: 2px solid #1e1e1e; color: #aaa;
+  background: var(--ink2); border: 2px solid var(--border); color: var(--text2);
   padding: 9px 18px; border-radius: 7px;
   cursor: pointer; font-size: .85rem; font-weight: 600;
   transition: all .15s; font-family: inherit;
 }
-.tc-btn:hover { border-color: #333; color: #ddd; }
-.tc-btn.selected { border-color: #f5b623; color: #f5b623; background: rgba(245,182,35,.06); }
+.tc-btn:hover { border-color: var(--border2); color: var(--text0); }
+.tc-btn.selected { border-color: var(--amber); color: var(--amber); background: rgba(196,148,48,.06); }
 .tc-sub { font-size: .72rem; opacity: .75; }
 
 /* Start */
 .start-btn {
   margin-top: 28px;
   width: 100%; max-width: 300px;
-  background: #f5b623; color: #000; border: none;
+  background: var(--amber); color: #000; border: none;
   padding: 14px; border-radius: 7px;
   font-weight: 800; font-size: .95rem; cursor: pointer;
   transition: background .15s; display: block;
 }
-.start-btn:hover { background: #ffd740; }
-.start-btn.disabled { background: #222; color: #555; cursor: not-allowed; }
+.start-btn:hover { background: var(--amber-l); }
+.start-btn.disabled { background: var(--ink3); color: var(--text3); cursor: not-allowed; }
 
 .online-note {
   margin-top: 14px; padding: 12px 14px;
-  background: #111; border: 1px solid #1e1e1e;
-  border-radius: 7px; font-size: .82rem; color: #666;
+  background: var(--ink2); border: 1px solid var(--border);
+  border-radius: 7px; font-size: .82rem; color: var(--text2);
 }
-.online-note a { color: #f5b623; font-weight: 700; margin-left: 4px; }
+.online-note a { color: var(--amber); font-weight: 700; margin-left: 4px; }
 </style>

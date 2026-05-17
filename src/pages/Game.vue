@@ -14,6 +14,7 @@ const tcType     = computed(() => route.query.tc         || 'rapid')
 const variant    = computed(() => route.query.variant    || 'international')  // default 10x10
 const difficulty = computed(() => route.query.difficulty || 'medium')
 const playerSide = computed(() => route.query.side       || 'white')
+const roomId     = computed(() => route.query.room       || null)   // for friend mode
 
 const isInternational = computed(() => variant.value === 'international')
 
@@ -95,6 +96,7 @@ const setBoardTheme = (id) => { boardTheme.value = id; localStorage.setItem('boa
       :timeControl="timeControl"
       :botDifficulty="difficulty"
       :playerSide="playerSide"
+      :roomId="roomId"
       @gameOver="onGameOver"
     />
 
@@ -107,6 +109,7 @@ const setBoardTheme = (id) => { boardTheme.value = id; localStorage.setItem('boa
       :timeControl="timeControl"
       :botDifficulty="difficulty"
       :playerSide="playerSide"
+      :roomId="roomId"
       @gameOver="onGameOver"
     />
   </div>
@@ -121,8 +124,8 @@ const setBoardTheme = (id) => { boardTheme.value = id; localStorage.setItem('boa
 
     <div class="side-card">
       <div class="side-label">{{ t.game.sideVariant }}</div>
-      <div style="font-size:.82rem; color:#ddd; font-weight:700; margin-bottom:4px;">{{ variantLabel }}</div>
-      <div style="font-size:.75rem; color:#555; line-height:1.5;">
+      <div style="font-size:.82rem; color:var(--text0); font-weight:700; margin-bottom:4px;">{{ variantLabel }}</div>
+      <div style="font-size:.75rem; color:var(--text2); line-height:1.5;">
         <template v-if="isInternational">
           {{ t.game.intlDesc }}<br>{{ t.game.intlDesc2 }}<br>{{ t.game.intlDesc3 }}
         </template>
@@ -174,49 +177,49 @@ const setBoardTheme = (id) => { boardTheme.value = id; localStorage.setItem('boa
   display: flex; align-items: center;
   gap: 8px; flex-wrap: wrap;
   padding: 8px 12px;
-  background: #111; border: 1px solid #1e1e1e;
+  background: var(--ink2); border: 1px solid var(--border);
   border-radius: 7px;
 }
 .info-chip {
-  font-size: .78rem; color: #888; font-weight: 500;
-  background: #1a1a1a; padding: 3px 8px;
+  font-size: .78rem; color: var(--text2); font-weight: 500;
+  background: var(--ink3); padding: 3px 8px;
   border-radius: 4px; white-space: nowrap;
 }
-.variant-chip { color: #f5b623; border: 1px solid rgba(245,182,35,.25); }
+.variant-chip { color: var(--amber); border: 1px solid rgba(196,148,48,.25); }
 .settings-btn {
-  background: transparent; border: none; color: #555;
+  background: transparent; border: none; color: var(--text3);
   cursor: pointer; margin-left: auto; font-size: 1rem;
   padding: 2px 4px; transition: color .15s;
 }
-.settings-btn:hover { color: #fff; }
+.settings-btn:hover { color: var(--text0); }
 
 .settings-panel {
   width: min(580px, 95vw);
-  background: #111; border: 1px solid #1e1e1e;
+  background: var(--ink2); border: 1px solid var(--border);
   border-radius: 7px; padding: 14px;
 }
-.settings-label { font-size: .72rem; font-weight: 700; color: #555; letter-spacing: 1px; margin-bottom: 10px; }
+.settings-label { font-size: .72rem; font-weight: 700; color: var(--text3); letter-spacing: 1px; margin-bottom: 10px; }
 .theme-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .theme-btn {
   display: flex; align-items: center; gap: 5px;
   padding: 6px 12px; border-radius: 6px;
-  border: 1.5px solid #1e1e1e; background: #1a1a1a;
-  cursor: pointer; font-size: .78rem; color: #aaa;
+  border: 1.5px solid var(--border); background: var(--ink3);
+  cursor: pointer; font-size: .78rem; color: var(--text2);
   transition: all .15s; font-family: inherit;
 }
-.theme-btn:hover { border-color: #333; color: #ddd; }
-.theme-btn.active { border-color: #f5b623; color: #f5b623; }
+.theme-btn:hover { border-color: var(--border2); color: var(--text0); }
+.theme-btn.active { border-color: var(--amber); color: var(--amber); }
 
 /* Sidebar */
 .game-sidebar { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
 
 .side-card {
-  background: #111; border: 1px solid #1e1e1e;
+  background: var(--ink2); border: 1px solid var(--border);
   border-radius: 10px; padding: 14px;
   display: flex; flex-direction: column; gap: 8px;
 }
 .side-label {
-  font-size: .68rem; font-weight: 700; color: #444;
+  font-size: .68rem; font-weight: 700; color: var(--text3);
   letter-spacing: 1.5px; text-transform: uppercase;
   margin-bottom: 2px;
 }
@@ -228,16 +231,16 @@ const setBoardTheme = (id) => { boardTheme.value = id; localStorage.setItem('boa
   text-decoration: none; font-family: inherit;
 }
 .side-btn-outline {
-  background: transparent; border: 1px solid #252525; color: #888;
+  background: transparent; border: 1px solid var(--border2); color: var(--text2);
 }
-.side-btn-outline:hover { border-color: #444; color: #ddd; }
+.side-btn-outline:hover { border-color: var(--border2); color: var(--text0); }
 .side-btn-gold {
-  background: rgba(245,182,35,.1); border: 1px solid rgba(245,182,35,.3); color: #f5b623;
+  background: rgba(196,148,48,.1); border: 1px solid rgba(196,148,48,.3); color: var(--amber);
 }
-.side-btn-gold:hover { background: rgba(245,182,35,.18); color: #ffd740; }
+.side-btn-gold:hover { background: rgba(196,148,48,.18); color: var(--amber-l); }
 
 .rules-list {
-  font-size: .75rem; color: #666; line-height: 1.8;
+  font-size: .75rem; color: var(--text2); line-height: 1.8;
   padding-left: 14px; margin: 0;
 }
 </style>
