@@ -38,10 +38,17 @@ const copyLink = async () => {
 
 const goToGame = (side) => {
   const room = roomData.value
-  router.push(
-    `/game?mode=friend&room=${room.id}&side=${side}&variant=${room.variant}&tc=${room.time_control}`
-  )
+  router.push(`/game?mode=friend&room=${room.id}&side=${side}&variant=${room.variant}&tc=${room.time_control}`)
 }
+
+// Side assignment by variant:
+// - International (10×10): dark moves first → host='black', guest='white'
+// - Russian (8×8): white moves first → host='white', guest='black'
+const hostSide  = computed(() => roomData.value?.variant === 'russian' ? 'white' : 'black')
+const guestSide = computed(() => roomData.value?.variant === 'russian' ? 'black' : 'white')
+const hostSideLabel = computed(() =>
+  roomData.value?.variant === 'russian' ? '⬜ You are White' : '⚫ You are Black'
+)
 
 onMounted(async () => {
   const savedUser = JSON.parse(localStorage.getItem('wc_user') || 'null')
@@ -61,7 +68,8 @@ onMounted(async () => {
       channel = subscribeRoom(room.id, (newRoom) => {
         roomData.value = newRoom
         if (newRoom.status === 'playing') {
-          goToGame('white')   // host always plays white
+          // Host side depends on variant: international→black(dark,first), russian→white(first)
+          goToGame(newRoom.variant === 'russian' ? 'white' : 'black')
         }
       })
     } else {
@@ -70,7 +78,8 @@ onMounted(async () => {
       const room = await joinRoom(roomId.value, userId)
       roomData.value = room
       status.value   = 'ready'
-      goToGame('black')   // guest always plays black
+      // Guest side is the opposite of host
+      goToGame(room.variant === 'russian' ? 'black' : 'white')
     }
   } catch (err) {
     status.value  = 'error'
@@ -135,7 +144,7 @@ const tcLabel = computed(() => {
         <span class="chip">Room {{ roomId }}</span>
         <span class="chip">{{ roomData?.variant === 'russian' ? '♞ 8×8 Russian' : '♟ 10×10 International' }}</span>
         <span class="chip">{{ tcLabel }}</span>
-        <span class="chip chip-you">⬜ You are White</span>
+        <span class="chip chip-you">{{ hostSideLabel }}</span>
       </div>
 
       <!-- Waiting animation -->

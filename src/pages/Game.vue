@@ -120,6 +120,7 @@ const setBoardTheme = (id) => { boardTheme.value = id; localStorage.setItem('boa
       <div class="side-label">{{ t.game.sideGame }}</div>
       <RouterLink to="/play" class="side-btn side-btn-outline">{{ t.game.newGame }}</RouterLink>
       <button @click="boardRef?.resetGame()" class="side-btn side-btn-outline">{{ t.game.restart }}</button>
+      <button v-if="mode==='friend'" @click="boardRef?.offerDraw()" class="side-btn side-btn-outline">🤝 Offer Draw</button>
     </div>
 
     <div class="side-card">

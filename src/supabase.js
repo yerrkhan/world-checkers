@@ -127,7 +127,11 @@ export const getRoom = async (roomId) => {
 
 export const pushMove = async (roomId, move) => {
   const room = await getRoom(roomId)
-  const moves = [...(room.moves || []), { from: move.from, path: move.path, ts: Date.now() }]
+  // Support regular moves {from,path} and signals {type,...} (draw offer/accept/decline)
+  const entry = move.type
+    ? { ...move, ts: Date.now() }
+    : { from: move.from, path: move.path, ts: Date.now() }
+  const moves = [...(room.moves || []), entry]
   const { error } = await supabase
     .from('game_rooms')
     .update({ moves, last_move_at: Date.now() })

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from '../i18n.js'
 
@@ -50,11 +50,16 @@ const fullName = computed(() => {
   return [fn, ln].filter(Boolean).join(' ') || user.value?.username || user.value?.email?.split('@')[0] || 'Player'
 })
 
-const recentGames = [
-  { opponent: 'Bot (Easy)',   result: 'Win',  elo: '+16', tc: 'Rapid',    date: '2 hours ago' },
-  { opponent: 'Bot (Medium)', result: 'Loss', elo: '-16', tc: 'Blitz',    date: '3 hours ago' },
-  { opponent: 'Pass & Play',  result: 'Draw', elo: '+0',  tc: 'No timer', date: '1 day ago'   },
-]
+// Load match history from localStorage (saved by friend games)
+const storedHistory = ref([])
+onMounted(() => {
+  try {
+    storedHistory.value = JSON.parse(localStorage.getItem('wc_game_history') || '[]')
+  } catch(e) {
+    storedHistory.value = []
+  }
+})
+const recentGames = computed(() => storedHistory.value)
 
 const premiumFeatures = [
   { icon: '🤖', name: 'AI Post-Match Analysis',        desc: 'Get move-by-move analysis of every game' },
@@ -178,7 +183,7 @@ const premiumFeatures = [
       <div v-if="recentGames.length === 0" style="color:var(--text2); font-size:14px; text-align:center; padding:20px;">
         {{ t.profile.noGamesYet }} <RouterLink to="/play" style="color:var(--amber);">{{ t.profile.playFirst }}</RouterLink>
       </div>
-      <div v-for="game in recentGames" :key="game.date" style="
+      <div v-for="game in recentGames" :key="game.id || game.date" style="
         display:flex; justify-content:space-between; align-items:center;
         padding:10px 0; border-bottom:1px solid var(--border);
         font-size:14px;

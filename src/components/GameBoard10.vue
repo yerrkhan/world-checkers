@@ -45,6 +45,9 @@ const syncedTurn = ref('dark')
 let clockId   = null
 let roomChannel = null   // Supabase Realtime channel for friend mode
 
+// ─── Draw offer state ────────────────────────────────────────────────────
+const drawOffer = ref(null)  // { by: 'dark'|'light' } when opponent offers draw
+
 const fmt = s => {
   const m = Math.floor(s / 60), sec = s % 60
   return `${m}:${sec.toString().padStart(2,'0')}`
@@ -94,10 +97,32 @@ const refresh = () => {
 }
 
 const endGame = (w, reason) => {
-  status.value = w === 'dark' ? 'dark_wins' : 'light_wins'
+  if (status.value !== 'playing') return   // prevent double-trigger
+  status.value = w === 'draw' ? 'draw' : w === 'dark' ? 'dark_wins' : 'light_wins'
   winner.value  = w
   stopClock()
   emit('gameOver', { winner: w })
+
+  // Save match history for friend games
+  if (props.gameMode === 'friend') {
+    try {
+      const hist = JSON.parse(localStorage.getItem('wc_game_history') || '[]')
+      let result = 'Draw'
+      if (w !== 'draw') result = w === humanTurn.value ? 'Win' : 'Loss'
+      const tcNames = { bullet: 'Bullet', blitz: 'Blitz', rapid: 'Rapid', none: 'Unlimited' }
+      hist.unshift({
+        id: Date.now(),
+        opponent: 'Friend',
+        result,
+        elo: '+0',
+        tc: tcNames[props.timeControl.type] || 'Rapid',
+        date: 'Just now',
+        variant: 'international',
+      })
+      localStorage.setItem('wc_game_history', JSON.stringify(hist.slice(0, 20)))
+    } catch(e) {}
+  }
+
   const total = Math.max(history.value.length, 4)
   reportData.value = {
     winner: w, reason,
@@ -204,6 +229,21 @@ const runBot = () => {
   botBusy.value = false
 }
 
+// ─── Draw offer (friend mode only) ───────────────────────────────────────
+const offerDraw = () => {
+  if (props.gameMode !== 'friend' || !props.roomId || status.value !== 'playing') return
+  pushMove(props.roomId, { type: 'draw_offer', by: humanTurn.value }).catch(() => {})
+}
+const acceptDraw = () => {
+  if (props.roomId) pushMove(props.roomId, { type: 'draw_accept', by: humanTurn.value }).catch(() => {})
+  drawOffer.value = null
+  endGame('draw', 'agreement')
+}
+const declineDraw = () => {
+  if (props.roomId) pushMove(props.roomId, { type: 'draw_decline', by: humanTurn.value }).catch(() => {})
+  drawOffer.value = null
+}
+
 // ─── Highlight helpers ────────────────────────────────────────────────────
 const isSel    = (r, c) => sel.value?.r === r && sel.value?.c === c
 const isTgt    = (r, c) => targets.value.some(t => t.r === r && t.c === c)
@@ -242,15 +282,31 @@ onMounted(() => {
     botBusy.value = true
     setTimeout(runBot, 600)
   }
-  // Friend mode: subscribe to Supabase for opponent moves
+  // Friend mode: subscribe to Supabase for opponent moves + draw signals
   if (props.gameMode === 'friend' && props.roomId) {
     roomChannel = subscribeRoom(props.roomId, (newRoom) => {
-      const supabaseMoves = newRoom.moves || []
-      const localCount    = history.value.length
-      if (supabaseMoves.length > localCount) {
-        // New moves arrived — these are from the opponent
-        for (let i = localCount; i < supabaseMoves.length; i++) {
-          applyOpponentMove(supabaseMoves[i])
+      const allMoves     = newRoom.moves || []
+      const regularMoves = allMoves.filter(m => !m.type)   // actual game moves
+      const signals      = allMoves.filter(m =>  m.type)   // draw offer/accept/decline
+
+      // Apply any new regular opponent moves
+      const localCount = history.value.length
+      if (regularMoves.length > localCount) {
+        for (let i = localCount; i < regularMoves.length; i++) {
+          applyOpponentMove(regularMoves[i])
+        }
+      }
+
+      // Handle draw signals
+      const lastSignal = signals[signals.length - 1]
+      if (lastSignal) {
+        if (lastSignal.type === 'draw_offer' && lastSignal.by !== humanTurn.value) {
+          drawOffer.value = lastSignal
+        } else if (lastSignal.type === 'draw_accept' && status.value === 'playing') {
+          drawOffer.value = null
+          endGame('draw', 'agreement')
+        } else if (lastSignal.type === 'draw_decline') {
+          drawOffer.value = null
         }
       }
     })
@@ -260,7 +316,7 @@ onUnmounted(() => {
   stopClock()
   if (roomChannel) supabase.removeChannel(roomChannel)
 })
-defineExpose({ resetGame, history, status })
+defineExpose({ resetGame, history, status, offerDraw })
 
 // ─── Column/Row labels ────────────────────────────────────────────────────
 const colLabels = ['a','b','c','d','e','f','g','h','i','j']
@@ -283,6 +339,7 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
     <span v-else-if="status==='playing'">
       {{ syncedTurn === 'dark' ? '⚫ Black' : '⬜ White' }}'s turn
     </span>
+    <span v-else-if="status==='draw'">🤝 Draw by agreement!</span>
     <span v-else-if="status==='dark_wins'">⚫ Black wins!</span>
     <span v-else>⬜ White wins!</span>
   </div>
@@ -290,11 +347,11 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
   <!-- Top clock (opponent) -->
   <div v-if="!noTimer" class="clock"
     :class="{
-      active: flipped ? (syncedTurn==='light' && status==='playing') : (syncedTurn==='light' && status==='playing'),
-      low: flipped ? clocks.dark < 30 : clocks.light < 30
+      active: syncedTurn !== humanTurn && status === 'playing',
+      low: humanTurn === 'light' ? clocks.dark < 30 : clocks.light < 30
     }">
-    <span>{{ flipped ? '⚫ Black' : '⬜ White' }}</span>
-    <span class="clock-time">{{ flipped ? fmt(clocks.dark) : fmt(clocks.light) }}</span>
+    <span>{{ humanTurn === 'light' ? '⚫ Black' : '⬜ White' }}</span>
+    <span class="clock-time">{{ humanTurn === 'light' ? fmt(clocks.dark) : fmt(clocks.light) }}</span>
   </div>
 
   <!-- Board -->
@@ -337,14 +394,14 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
     </div>
   </div>
 
-  <!-- Bottom clock (current player = always at bottom) -->
+  <!-- Bottom clock (you) -->
   <div v-if="!noTimer" class="clock"
     :class="{
-      active: flipped ? (syncedTurn==='dark' && status==='playing') : (syncedTurn==='dark' && status==='playing'),
-      low: flipped ? clocks.light < 30 : clocks.dark < 30
+      active: syncedTurn === humanTurn && status === 'playing',
+      low: humanTurn === 'light' ? clocks.light < 30 : clocks.dark < 30
     }">
-    <span>{{ flipped ? '⬜ White' : '⚫ Black' }}{{ (gameMode==='vsBot' || gameMode==='friend') ? ' (You)' : '' }}</span>
-    <span class="clock-time">{{ flipped ? fmt(clocks.light) : fmt(clocks.dark) }}</span>
+    <span>{{ humanTurn === 'light' ? '⬜ White' : '⚫ Black' }}{{ (gameMode==='vsBot' || gameMode==='friend') ? ' (You)' : '' }}</span>
+    <span class="clock-time">{{ humanTurn === 'light' ? fmt(clocks.light) : fmt(clocks.dark) }}</span>
   </div>
 
   <!-- Buttons -->
@@ -364,15 +421,32 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
   </div>
 </div>
 
+<!-- Draw Offer Modal -->
+<Teleport to="body">
+  <div v-if="drawOffer" class="draw-overlay">
+    <div class="draw-modal">
+      <div class="draw-icon">🤝</div>
+      <div class="draw-title">Draw Offered</div>
+      <div class="draw-sub">Your opponent has offered a draw.</div>
+      <div class="draw-btns">
+        <button @click="declineDraw" class="btn-secondary">Decline</button>
+        <button @click="acceptDraw" class="btn-primary">Accept Draw</button>
+      </div>
+    </div>
+  </div>
+</Teleport>
+
 <!-- Match Report Modal -->
 <Teleport to="body">
   <div v-if="report" class="report-backdrop" @click.self="report=false">
     <div class="report-card">
-      <div class="report-result" :class="reportData.winner==='dark' ? 'win' : 'loss'">
-        {{ reportData.winner==='dark' ? '⚫ Black wins' : '⬜ White wins' }}
+      <div class="report-result"
+        :class="reportData.winner==='draw' ? 'draw-result' : reportData.winner==='dark' ? 'win' : 'loss'">
+        {{ reportData.winner==='draw' ? '🤝 Draw' : reportData.winner==='dark' ? '⚫ Black wins' : '⬜ White wins' }}
       </div>
       <div class="report-reason">
-        {{ reportData.reason==='time' ? 'on time' : 'by blocking all moves' }}
+        {{ reportData.reason==='agreement' ? 'by mutual agreement'
+         : reportData.reason==='time' ? 'on time' : 'by blocking all moves' }}
       </div>
 
       <div class="coach-box">
@@ -398,8 +472,8 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
       <div class="upgrade-bar">
         <span>🔒</span>
         <div>
-          <div style="font-weight:700;font-size:.85rem;margin-bottom:2px;">Full Game Report</div>
-          <div style="font-size:.78rem;color:#666;">Upgrade to PRO for move-by-move analysis.</div>
+          <div style="font-weight:700;font-size:.85rem;margin-bottom:2px;color:var(--text0);">Full Game Report</div>
+          <div style="font-size:.78rem;color:var(--text3);">Upgrade to PRO for move-by-move analysis.</div>
         </div>
       </div>
 
@@ -578,23 +652,43 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
 /* Move history */
 .move-hist {
   width: min(580px, 95vw);
-  background: #111;
-  border: 1px solid #1e1e1e;
+  background: var(--ink2);
+  border: 1px solid var(--border);
   border-radius: 7px;
   padding: 10px 14px;
   max-height: 90px;
   overflow-y: auto;
 }
 .hist-label {
-  font-size: 10px; font-weight: 700; color: #555;
+  font-size: 10px; font-weight: 700; color: var(--text3);
   letter-spacing: 0.08em; margin-bottom: 5px;
 }
 .hist-moves { display: flex; flex-wrap: wrap; gap: 4px; }
 .hist-move {
   font-size: 10px; font-family: monospace;
-  background: #1a1a1a; padding: 2px 6px;
-  border-radius: 4px; color: #888;
+  background: var(--ink3); padding: 2px 6px;
+  border-radius: 4px; color: var(--text2);
 }
+
+/* Draw offer modal */
+.draw-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.72);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2500; padding: 20px;
+}
+.draw-modal {
+  background: var(--ink2); border: 1px solid var(--border2);
+  border-radius: 14px; padding: 32px 28px;
+  max-width: 320px; width: 100%;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  animation: slideUp 0.3s ease;
+}
+.draw-icon  { font-size: 2.4rem; }
+.draw-title { font-size: 1.1rem; font-weight: 800; color: var(--text0); }
+.draw-sub   { font-size: 0.85rem; color: var(--text2); text-align: center; }
+.draw-btns  { display: flex; gap: 10px; margin-top: 4px; width: 100%; }
+.draw-btns button { flex: 1; }
 
 /* Report modal */
 .report-backdrop {
@@ -604,7 +698,7 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
   z-index: 3000; padding: 20px;
 }
 .report-card {
-  background: #111; border: 1px solid #222;
+  background: var(--ink2); border: 1px solid var(--border);
   border-radius: 14px; padding: 28px;
   max-width: 360px; width: 100%;
   display: flex; flex-direction: column; gap: 16px;
@@ -612,22 +706,23 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
 }
 @keyframes slideUp { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
 .report-result { font-size: 1.2rem; font-weight: 800; text-align: center; }
-.report-result.win  { color: #f5b623; }
-.report-result.loss { color: #888; }
-.report-reason { text-align: center; font-size: 0.82rem; color: #555; margin-top: -10px; }
+.report-result.win        { color: var(--amber); }
+.report-result.loss       { color: var(--text3); }
+.report-result.draw-result{ color: var(--text2); }
+.report-reason { text-align: center; font-size: 0.82rem; color: var(--text3); margin-top: -10px; }
 
 .coach-box {
   display: flex; gap: 12px; align-items: flex-start;
-  background: #1a1a1a; border: 1px solid #252525;
+  background: var(--ink3); border: 1px solid var(--border);
   border-radius: 9px; padding: 14px;
 }
 .coach-ava {
   font-size: 22px; width: 36px; height: 36px;
-  border-radius: 50%; background: #252525;
+  border-radius: 50%; background: var(--ink4);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.coach-msg { font-size: 0.82rem; color: #888; line-height: 1.5; margin: 0; }
+.coach-msg { font-size: 0.82rem; color: var(--text2); line-height: 1.5; margin: 0; }
 
 .report-stats {
   display: flex; gap: 10px; justify-content: center;

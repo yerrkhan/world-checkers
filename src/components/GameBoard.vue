@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RussianCheckers } from '../game/russianCheckers.js'
+import { supabase, pushMove, subscribeRoom } from '../supabase.js'
 
 const props = defineProps({
   boardTheme:    { type: String, default: 'classic' },
@@ -8,6 +9,7 @@ const props = defineProps({
   timeControl:   { type: Object, default: () => ({ type: 'rapid', seconds: 600 }) },
   botDifficulty: { type: String, default: 'medium' },  // 'easy' | 'medium' | 'hard'
   playerSide:    { type: String, default: 'white' },   // 'white' | 'black'
+  roomId:        { type: String, default: null },      // for friend mode
 })
 
 const emit = defineEmits(['gameOver', 'moveMade'])
@@ -42,6 +44,7 @@ const rowIndices = computed(() => flipped.value ? [7,6,5,4,3,2,1,0] : [0,1,2,3,4
 const colIndices = computed(() => flipped.value ? [7,6,5,4,3,2,1,0] : [0,1,2,3,4,5,6,7])
 const timerInterval = ref(null)
 const botThinking = ref(false)
+let roomChannel = null   // Supabase Realtime channel for friend mode
 const noTimer = computed(() => props.timeControl.type === 'none')
 const boardColors = computed(() => boardThemes[props.boardTheme] || boardThemes.classic)
 
@@ -78,7 +81,45 @@ const coachMessage = computed(() => {
   return coachMessages.loss[Math.floor(Math.random() * 3)]
 })
 
+// Apply an incoming opponent move from Supabase (Russian 8×8 format: {row,col})
+const applyOpponentMove = (moveData) => {
+  const { from, path } = moveData
+  if (!from || !path) return
+  const dest = path[path.length - 1]
+  const match = allowedMoves.value.find(m => {
+    const mdest = m.path[m.path.length - 1]
+    return m.from.row === from.row && m.from.col === from.col &&
+           mdest.row === dest.row && mdest.col === dest.col
+  })
+  if (match) {
+    game.value.move(match)
+    lastMove.value = { from: { ...match.from }, to: match.path[match.path.length - 1] }
+    moveHistory.value.push({ from: { ...match.from }, to: match.path[match.path.length - 1] })
+    updateFromEngine()
+    emit('moveMade', moveHistory.value)
+  }
+}
+
 const triggerMatchReport = (winner, reason = 'no_moves') => {
+  // Save match history for friend games
+  if (props.gameMode === 'friend') {
+    try {
+      const hist = JSON.parse(localStorage.getItem('wc_game_history') || '[]')
+      const playerWon = (winner === 'white_wins' && humanColor.value === 'white') ||
+                        (winner === 'black_wins' && humanColor.value === 'black')
+      const tcNames = { bullet: 'Bullet', blitz: 'Blitz', rapid: 'Rapid', none: 'Unlimited' }
+      hist.unshift({
+        id: Date.now(),
+        opponent: 'Friend',
+        result: playerWon ? 'Win' : 'Loss',
+        elo: '+0',
+        tc: tcNames[props.timeControl.type] || 'Rapid',
+        date: 'Just now',
+        variant: 'russian',
+      })
+      localStorage.setItem('wc_game_history', JSON.stringify(hist.slice(0, 20)))
+    } catch(e) {}
+  }
   const total = Math.max(moveHistory.value.length, 4)
   matchStats.value = {
     best: Math.floor(total * 0.35) + Math.floor(Math.random() * 3),
@@ -138,6 +179,7 @@ const formatTime = (secs) => {
 const handleSquareClick = (row, col) => {
   if (gameStatus.value !== 'playing') return
   if (props.gameMode === 'vsBot' && currentTurn.value !== humanColor.value) return
+  if (props.gameMode === 'friend' && currentTurn.value !== humanColor.value) return
   if (botThinking.value) return
 
   const cell = board.value[row]?.[col]
@@ -163,6 +205,10 @@ const handleSquareClick = (row, col) => {
       validMoveTargets.value = []
       updateFromEngine()
       emit('moveMade', moveHistory.value)
+      // Friend mode: push our move to Supabase
+      if (props.gameMode === 'friend' && props.roomId) {
+        pushMove(props.roomId, { from, path: move.path }).catch(() => {})
+      }
       if (props.gameMode === 'vsBot' && gameStatus.value === 'playing') runBotMove()
     } else {
       if (cell && cell.color === currentTurn.value) {
@@ -229,8 +275,23 @@ onMounted(() => {
     botThinking.value = true
     setTimeout(runBotMove, 600)
   }
+  // Friend mode: subscribe to Supabase for opponent moves
+  if (props.gameMode === 'friend' && props.roomId) {
+    roomChannel = subscribeRoom(props.roomId, (newRoom) => {
+      const allMoves     = (newRoom.moves || []).filter(m => !m.type)  // regular moves only
+      const localCount   = moveHistory.value.length
+      if (allMoves.length > localCount) {
+        for (let i = localCount; i < allMoves.length; i++) {
+          applyOpponentMove(allMoves[i])
+        }
+      }
+    })
+  }
 })
-onUnmounted(stopTimer)
+onUnmounted(() => {
+  stopTimer()
+  if (roomChannel) supabase.removeChannel(roomChannel)
+})
 defineExpose({ resetGame, moveHistory, gameStatus })
 </script>
 

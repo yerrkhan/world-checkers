@@ -813,10 +813,10 @@ onUnmounted(() => {
 .p-block { flex: 1; display: flex; align-items: center; gap: 7px; min-width: 0; }
 .p-block-r { flex-direction: row-reverse; }
 .p-ava {
-  width: 28px; height: 28px;
+  width: 36px; height: 36px;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 0.74rem;
+  font-weight: 700; font-size: 0.8rem;
   flex-shrink: 0;
   overflow: hidden;
   padding: 0;
@@ -871,11 +871,12 @@ onUnmounted(() => {
 .clock-white { background: #e0d8d0; border: 1px solid #bbb; }
 .clock-black { background: #1a1a1a; border: 1px solid #444; }
 
-/* Mini board */
+/* Mini board — padding-bottom trick for reliable 1:1 ratio in all browsers */
 .mini-board-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 1;
+  padding-bottom: 100%;   /* creates 1:1 aspect ratio */
+  flex-shrink: 0;
 }
 .mini-board {
   display: grid;
@@ -883,8 +884,8 @@ onUnmounted(() => {
   grid-template-rows: repeat(10, 1fr);
   border-radius: 4px;
   overflow: hidden;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
 }
 .winner-overlay {
   position: absolute;
