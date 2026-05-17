@@ -221,9 +221,9 @@ const avaErr = (e, game, side) => {
 /* ── Lifecycle ── */
 let moveCounter = 0
 onMounted(() => {
-  animateCount(65,    v => tournamentsToday.value = v)
-  animateCount(3007,  v => playersOnline.value    = v, 1800)
-  animateCount(48293, v => gamesPlayed.value      = v, 2200)
+  animateCount(10,   v => tournamentsToday.value = v)
+  animateCount(424,  v => playersOnline.value    = v, 1800)
+  animateCount(5869, v => gamesPlayed.value      = v, 2200)
 
   const clockId = setInterval(() => {
     // Tick the clock of the active player — only for games still running
@@ -806,6 +806,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 0;
 }
 .game-card:hover {
   border-color: var(--amber);
@@ -880,17 +881,19 @@ onUnmounted(() => {
 .mini-board-wrap {
   position: relative;
   width: 100%;
-  padding-bottom: 100%;   /* creates 1:1 aspect ratio */
+  aspect-ratio: 1 / 1;
   flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 4px;
 }
 .mini-board {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   grid-template-rows: repeat(10, 1fr);
-  border-radius: 4px;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
   overflow: hidden;
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
 }
 .winner-overlay {
   position: absolute;
@@ -935,6 +938,7 @@ onUnmounted(() => {
   font-weight: 600;
   color: var(--amber);
   padding: 4px 0;
+  min-height: 24px;
   opacity: 0;
   transition: opacity 0.15s;
 }

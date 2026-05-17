@@ -63,12 +63,22 @@ const pieceCounts = computed(() => {
   }
   return { dark, light }
 })
+const STARTING_PIECES = 20
+const CAPTURE_PREVIEW_MAX = 5
 const pieceAdv = computed(() => {
   const { dark, light } = pieceCounts.value
   const diff = dark - light
   if (diff === 0) return null
   return { side: diff > 0 ? 'dark' : 'light', diff: Math.abs(diff) }
 })
+const topClockSide = computed(() => humanTurn.value === 'light' ? 'dark' : 'light')
+const capturedFor = (side) => {
+  const opponent = side === 'dark' ? 'light' : 'dark'
+  return Math.max(0, STARTING_PIECES - pieceCounts.value[opponent])
+}
+const visibleCaptured = (side) => Math.min(capturedFor(side), CAPTURE_PREVIEW_MAX)
+const hiddenCaptured = (side) => Math.max(0, capturedFor(side) - CAPTURE_PREVIEW_MAX)
+const capturedPieceClass = (side) => side === 'dark' ? 'captured-light' : 'captured-dark'
 
 const fmt = s => {
   const m = Math.floor(s / 60), sec = s % 60
@@ -376,10 +386,15 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
       low: humanTurn === 'light' ? clocks.dark < 30 : clocks.light < 30
     }">
     <span>{{ humanTurn === 'light' ? '⚫' : '⬜' }}</span>
-    <!-- piece count for opponent -->
     <span class="clock-pieces">
-      {{ humanTurn === 'light' ? pieceCounts.dark : pieceCounts.light }}
-      <span v-if="pieceAdv && pieceAdv.side !== humanTurn" class="adv-chip">+{{ pieceAdv.diff }}</span>
+      <span
+        v-for="n in visibleCaptured(topClockSide)"
+        :key="'top-captured-'+n"
+        class="captured-piece"
+        :class="capturedPieceClass(topClockSide)"
+      />
+      <span v-if="hiddenCaptured(topClockSide)" class="captured-more">+{{ hiddenCaptured(topClockSide) }}</span>
+      <span v-if="pieceAdv && pieceAdv.side === topClockSide" class="adv-chip">+{{ pieceAdv.diff }}</span>
     </span>
     <span class="clock-time">{{ humanTurn === 'light' ? fmt(clocks.dark) : fmt(clocks.light) }}</span>
   </div>
@@ -432,7 +447,13 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
     }">
     <span>{{ humanTurn === 'light' ? '⬜' : '⚫' }}{{ (props.gameMode==='vsBot'||props.gameMode==='friend') ? t.game.youLabel : '' }}</span>
     <span class="clock-pieces">
-      {{ humanTurn === 'light' ? pieceCounts.light : pieceCounts.dark }}
+      <span
+        v-for="n in visibleCaptured(humanTurn)"
+        :key="'bottom-captured-'+n"
+        class="captured-piece"
+        :class="capturedPieceClass(humanTurn)"
+      />
+      <span v-if="hiddenCaptured(humanTurn)" class="captured-more">+{{ hiddenCaptured(humanTurn) }}</span>
       <span v-if="pieceAdv && pieceAdv.side === humanTurn" class="adv-chip">+{{ pieceAdv.diff }}</span>
     </span>
     <span class="clock-time">{{ humanTurn === 'light' ? fmt(clocks.light) : fmt(clocks.dark) }}</span>
@@ -565,8 +586,30 @@ const colLabelsDisp= computed(() => flipped.value ? [...colLabels].reverse() : c
 .clock.low .clock-time { color: var(--red); }
 .clock-time { font-size: 1.4rem; font-variant-numeric: tabular-nums; }
 .clock-pieces {
-  display: flex; align-items: center; gap: 5px;
+  min-width: 72px;
+  display: flex; align-items: center; justify-content: center; gap: 3px;
   font-size: 0.9rem; color: var(--text2); font-weight: 600;
+}
+.captured-piece {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.45), inset 0 1px rgba(255,255,255,0.16);
+}
+.captured-dark {
+  background: radial-gradient(circle at 32% 30%, #343434, #111 72%);
+  border: 1px solid #090909;
+}
+.captured-light {
+  background: radial-gradient(circle at 32% 30%, var(--paper), #d8d8d8 72%);
+  border: 1px solid #b9b0a4;
+}
+.captured-more {
+  font-size: 0.75rem;
+  color: var(--text2);
+  font-weight: 800;
+  margin-left: 2px;
 }
 .adv-chip {
   background: rgba(76,175,80,0.18); color: #4caf50;

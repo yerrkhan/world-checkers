@@ -32,7 +32,7 @@ const plans = computed(() => [
   },
   {
     id: 'gold', name: t.value.premium.gold,
-    monthlyPrice: 4.99, yearlyPrice: 3.49,
+    monthlyPrice: 1700, yearlyPrice: 1000,
     color: '#c4a030', popular: false,
     cta: t.value.premium.ctaGold, current: false,
     features: [
@@ -48,7 +48,7 @@ const plans = computed(() => [
   },
   {
     id: 'platinum', name: t.value.premium.platinum,
-    monthlyPrice: 9.99, yearlyPrice: 6.99,
+    monthlyPrice: 2700, yearlyPrice: 1667,
     color: '#6aa0c4', popular: true,
     cta: t.value.premium.ctaPlatinum, current: false,
     features: [
@@ -64,7 +64,7 @@ const plans = computed(() => [
   },
   {
     id: 'diamond', name: t.value.premium.diamond,
-    monthlyPrice: 19.99, yearlyPrice: 13.99,
+    monthlyPrice: 4200, yearlyPrice: 2500,
     color: '#5cb8c8', popular: false,
     cta: t.value.premium.ctaDiamond, current: false,
     features: [
@@ -81,19 +81,19 @@ const plans = computed(() => [
 ])
 
 const displayPrice = (plan) => {
-  if (plan.id === 'free') return '$0'
+  if (plan.id === 'free') return '0 KZT'
   const price = billingCycle.value === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice
-  return `$${price.toFixed(2)}`
+  return `${price.toLocaleString()} KZT`
 }
 
-const displayPeriod = computed(() => billingCycle.value === 'yearly' ? t.value.premium.perMonth : t.value.premium.perMonth)
+const displayPeriod = computed(() => '/ month')
 
 const totalAmount = computed(() => {
-  if (!selectedPlan.value || selectedPlan.value.id === 'free') return '$0'
+  if (!selectedPlan.value || selectedPlan.value.id === 'free') return '0 KZT'
   if (billingCycle.value === 'yearly') {
-    return `$${(selectedPlan.value.yearlyPrice * 12).toFixed(2)}`
+    return `${(selectedPlan.value.yearlyPrice * 12).toLocaleString()} KZT`
   }
-  return `$${selectedPlan.value.monthlyPrice.toFixed(2)}`
+  return `${selectedPlan.value.monthlyPrice.toLocaleString()} KZT`
 })
 
 const openPayment = (plan) => {

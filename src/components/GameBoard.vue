@@ -58,6 +58,15 @@ const pieceAdv = computed(() => {
   if (diff === 0) return null
   return { side: diff > 0 ? 'black' : 'white', diff: Math.abs(diff) }
 })
+const STARTING_PIECES = 12
+const CAPTURE_PREVIEW_MAX = 5
+const capturedFor = (side) => {
+  const opponent = side === 'black' ? 'white' : 'black'
+  return Math.max(0, STARTING_PIECES - pieceCounts.value[opponent])
+}
+const visibleCaptured = (side) => Math.min(capturedFor(side), CAPTURE_PREVIEW_MAX)
+const hiddenCaptured = (side) => Math.max(0, capturedFor(side) - CAPTURE_PREVIEW_MAX)
+const capturedPieceClass = (side) => side === 'black' ? 'captured-light' : 'captured-dark'
 const humanColor = computed(() => props.playerSide === 'black' ? 'black' : 'white')
 
 // Board orientation — when playing as black, flip so black pieces are at the bottom
@@ -341,12 +350,15 @@ defineExpose({ resetGame, moveHistory, gameStatus })
     }">
       <span style="display:flex;align-items:center;gap:8px;">
         ⚫
-        <span style="font-size:0.85rem;font-weight:600;opacity:0.75;">
-          {{ pieceCounts.black }}
-          <span v-if="pieceAdv && pieceAdv.side==='black'" style="
-            background:rgba(76,175,80,0.2);color:#4caf50;border:1px solid rgba(76,175,80,0.4);
-            border-radius:4px;padding:1px 5px;font-size:0.7rem;font-weight:800;margin-left:3px;
-          ">+{{ pieceAdv.diff }}</span>
+        <span class="clock-pieces">
+          <span
+            v-for="n in visibleCaptured('black')"
+            :key="'black-captured-'+n"
+            class="captured-piece"
+            :class="capturedPieceClass('black')"
+          />
+          <span v-if="hiddenCaptured('black')" class="captured-more">+{{ hiddenCaptured('black') }}</span>
+          <span v-if="pieceAdv && pieceAdv.side==='black'" class="adv-chip">+{{ pieceAdv.diff }}</span>
         </span>
       </span>
       <span>{{ formatTime(timers.black) }}</span>
@@ -411,12 +423,15 @@ defineExpose({ resetGame, moveHistory, gameStatus })
     }">
       <span style="display:flex;align-items:center;gap:8px;">
         ⬜{{ (props.gameMode==='vsBot' && props.playerSide==='white') ? t.game.youLabel : '' }}
-        <span style="font-size:0.85rem;font-weight:600;opacity:0.7;">
-          {{ pieceCounts.white }}
-          <span v-if="pieceAdv && pieceAdv.side==='white'" style="
-            background:rgba(76,175,80,0.2);color:#4caf50;border:1px solid rgba(76,175,80,0.4);
-            border-radius:4px;padding:1px 5px;font-size:0.7rem;font-weight:800;margin-left:3px;
-          ">+{{ pieceAdv.diff }}</span>
+        <span class="clock-pieces">
+          <span
+            v-for="n in visibleCaptured('white')"
+            :key="'white-captured-'+n"
+            class="captured-piece"
+            :class="capturedPieceClass('white')"
+          />
+          <span v-if="hiddenCaptured('white')" class="captured-more">+{{ hiddenCaptured('white') }}</span>
+          <span v-if="pieceAdv && pieceAdv.side==='white'" class="adv-chip">+{{ pieceAdv.diff }}</span>
         </span>
       </span>
       <span>{{ formatTime(timers.white) }}</span>
@@ -554,6 +569,50 @@ defineExpose({ resetGame, moveHistory, gameStatus })
 </template>
 
 <style scoped>
+.clock-pieces {
+  min-width: 68px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.captured-piece {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.45), inset 0 1px rgba(255,255,255,0.16);
+}
+
+.captured-dark {
+  background: radial-gradient(circle at 32% 30%, #343434, #111 72%);
+  border: 1px solid #090909;
+}
+
+.captured-light {
+  background: radial-gradient(circle at 32% 30%, var(--paper), #d8d8d8 72%);
+  border: 1px solid #b9b0a4;
+}
+
+.captured-more,
+.adv-chip {
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.captured-more {
+  color: var(--text-secondary);
+}
+
+.adv-chip {
+  background: rgba(76,175,80,0.2);
+  color: #4caf50;
+  border: 1px solid rgba(76,175,80,0.4);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
 @keyframes slideUp {
   from { transform: translateY(20px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
