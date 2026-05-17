@@ -2,9 +2,15 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Draughts10 } from '../game/draughts10.js'
+import { useI18n } from '../i18n.js'
+
+const { t } = useI18n()
 
 const router    = useRouter()
 const isLoggedIn = ref(!!localStorage.getItem('wc_user'))
+
+/* ── Supabase Storage — photos stored online, work on any hosting ── */
+const AVATAR_BASE = 'https://kksfgpjnrppifciagrfd.supabase.co/storage/v1/object/public/avatars'
 
 /* ── Animated counters ── */
 const tournamentsToday = ref(0)
@@ -24,7 +30,11 @@ const animateCount = (target, setter, ms = 1600) => {
 
 /* ── Tournament data ── */
 const typeColor = { bullet:'#b23030', blitz:'#c49430', rapid:'#3a6caa' }
-const typeLabel = { bullet:'Bullet', blitz:'Blitz', rapid:'Rapid' }
+const typeLabel = computed(() => ({
+  bullet: t.value.home.bullet,
+  blitz:  t.value.home.blitz,
+  rapid:  t.value.home.rapid,
+}))
 
 const tournaments = [
   { id:1,  name:'Bullet Blitz 1+0',   time:'18:00', players:340, type:'bullet' },
@@ -40,14 +50,20 @@ const tournaments = [
 ]
 
 /* ── Live games ── */
-const liveGames = [
-  { id:1, white:'DraughtsMaster_KZ', wR:2340, black:'BoardWizard_NL',  bR:2231, tc:'3+0' },
-  { id:2, white:'TacticGod_DE',      wR:2176, black:'AlmataKing',       bR:2154, tc:'1+0' },
-  { id:3, white:'CheckerKing_RU',    wR:2285, black:'PieceMaster_FR',   bR:2198, tc:'5+0' },
-  { id:4, white:'NurSultan_Pro',     wR:2089, black:'CheckerPro_US',    bR:2108, tc:'5+0' },
-  { id:5, white:'DraughtsAce_PL',    wR:2130, black:'BoardBreaker_TR',  bR:2071, tc:'1+0' },
-  { id:6, white:'GrandMaster_KZ',    wR:2450, black:'CheckerElite_DE',  bR:2380, tc:'3+0' },
-]
+const liveGames = reactive([
+  { id:1, white:'DraughtsMaster_KZ', wR:2340, wImg:`${AVATAR_BASE}/p01.jpg`, black:'BoardWizard_NL',  bR:2231, bImg:`${AVATAR_BASE}/p02.jpg`, tc:'3+0' },
+  { id:2, white:'TacticGod_DE',      wR:2176, wImg:`${AVATAR_BASE}/p03.jpg`, black:'AlmataKing',       bR:2154, bImg:`${AVATAR_BASE}/p04.jpg`, tc:'1+0' },
+  { id:3, white:'CheckerKing_RU',    wR:2285, wImg:`${AVATAR_BASE}/p05.jpg`, black:'PieceMaster_FR',   bR:2198, bImg:`${AVATAR_BASE}/p06.jpg`, tc:'5+0' },
+  { id:4, white:'NurSultan_Pro',     wR:2089, wImg:`${AVATAR_BASE}/p07.jpg`, black:'CheckerPro_US',    bR:2108, bImg:`${AVATAR_BASE}/p08.jpg`, tc:'1+0' },
+])
+
+/* ── Last-move highlighting — tracks from/to squares per game ── */
+const lastMoves = reactive({})
+const isLastMoveSq = (gid, ri, ci) => {
+  const lm = lastMoves[gid]
+  if (!lm) return false
+  return (lm.from.r === ri && lm.from.c === ci) || (lm.to.r === ri && lm.to.c === ci)
+}
 
 /* ── Live clocks ── */
 const clocks = reactive({})
@@ -58,8 +74,8 @@ liveGames.forEach(g => {
     w: Math.floor(base * (0.45 + (seed % 30) / 100)),
     b: Math.floor(base * (0.55 + (seed % 20) / 100)),
     active: g.id % 2 === 0 ? 'b' : 'w',
-    flip: 0,
   }
+  lastMoves[g.id] = null
 })
 
 const fmt = s => {
@@ -97,12 +113,13 @@ const pieceShadow = (v) => v > 0
   : '0 2px 5px rgba(0,0,0,.4), inset 0 1px rgba(255,255,255,.85)'
 
 /* ── Watch modal ── */
-const watching    = ref(null)
-const watchEngine = ref(null)
-const watchBoard  = ref([])
-const watchDone   = ref(false)
-const watchClocks = reactive({ w: 180, b: 180, active: 'w' })
-let watchTimer    = null
+const watching     = ref(null)
+const watchEngine  = ref(null)
+const watchBoard   = ref([])
+const watchDone    = ref(false)
+const watchLastMove = ref(null)
+const watchClocks  = reactive({ w: 180, b: 180, active: 'w' })
+let watchTimer     = null
 
 const watchCellBg = (ri, ci) => (ri + ci) % 2 === 0 ? '#c8a96e' : '#6b4226'
 
@@ -119,10 +136,11 @@ const openWatch = (game) => {
     if (!mv) break
     eng.makeMove(mv)
   }
-  watchEngine.value = eng
-  watchBoard.value  = eng.getState().board.map(r => [...r])
-  watchDone.value   = false
-  watchClocks.w     = clocks[game.id].w
+  watchEngine.value  = eng
+  watchBoard.value   = eng.getState().board.map(r => [...r])
+  watchDone.value    = false
+  watchLastMove.value = null
+  watchClocks.w      = clocks[game.id].w
   watchClocks.b     = clocks[game.id].b
   watchClocks.active = clocks[game.id].active
   tick()
@@ -136,6 +154,8 @@ const tick = () => {
     watchClocks[watchClocks.active]--
     const mv = watchEngine.value.bestMove()
     if (!mv) { watchDone.value = true; return }
+    const wdest = mv.path[mv.path.length - 1]
+    watchLastMove.value = { from: mv.from, to: wdest }
     watchEngine.value.makeMove(mv)
     const ns = watchEngine.value.getState()
     watchBoard.value   = ns.board.map(r => [...r])
@@ -153,43 +173,49 @@ const closeWatch = () => {
 /* ── Premium plans ── */
 const yearly = ref(true)
 
-const plans = [
+const plans = computed(() => [
   {
-    id: 'free', name: 'Free',
+    id: 'free', name: t.value.home.planFree,
     monthlyPrice: 0, yearlyPrice: 0,
-    highlight: false, cta: 'Current Plan',
+    highlight: false, cta: t.value.home.ctaCurrent,
     features: [true, true, true, false, false, false, false, false],
   },
   {
-    id: 'gold', name: 'Gold', badge: null,
+    id: 'gold', name: t.value.home.planGold, badge: null,
     monthlyPrice: 1700, yearlyPrice: 1000,
-    highlight: false, cta: 'Choose Gold',
+    highlight: false, cta: t.value.home.ctaGold,
     features: [true, true, true, true, false, false, true, false],
   },
   {
-    id: 'platinum', name: 'Platinum', badge: null,
+    id: 'platinum', name: t.value.home.planPlatinum, badge: null,
     monthlyPrice: 2700, yearlyPrice: 1667,
-    highlight: false, cta: 'Choose Platinum',
+    highlight: false, cta: t.value.home.ctaPlatinum,
     features: [true, true, true, true, true, false, true, false],
   },
   {
-    id: 'diamond', name: 'Diamond', badge: 'Best Value',
+    id: 'diamond', name: t.value.home.planDiamond, badge: 'Best Value',
     monthlyPrice: 4200, yearlyPrice: 2500,
-    highlight: true, cta: 'Get Diamond',
+    highlight: true, cta: t.value.home.ctaDiamond,
     features: [true, true, true, true, true, true, true, true],
   },
-]
+])
 
-const featureRows = [
-  { label: 'Puzzles' },
-  { label: 'Lessons' },
-  { label: 'Bot Play' },
-  { label: 'Game Analysis' },
-  { label: 'Move Explanations' },
-  { label: 'Creative Profile' },
-  { label: 'Ad-Free' },
-  { label: 'Course Access' },
-]
+const featureRows = computed(() => [
+  { label: t.value.home.featPuzzles },
+  { label: t.value.home.featLessons },
+  { label: t.value.home.featBot },
+  { label: t.value.home.featAnalysis },
+  { label: t.value.home.featMoves },
+  { label: t.value.home.featProfile },
+  { label: t.value.home.featAdFree },
+  { label: t.value.home.featCourses },
+])
+
+/* ── Avatar image error: fall back to letter initial ── */
+const avaErr = (e, game, side) => {
+  if (side === 'w') game.wImg = null
+  else game.bImg = null
+}
 
 /* ── Lifecycle ── */
 let moveCounter = 0
@@ -199,14 +225,14 @@ onMounted(() => {
   animateCount(48293, v => gamesPlayed.value      = v, 2200)
 
   const clockId = setInterval(() => {
+    // Tick the clock of the active player
     liveGames.forEach(g => {
       const c = clocks[g.id]
       c[c.active]--
       if (c[c.active] < 0) c[c.active] = 0
-      c.flip++
-      if (c.flip % (8 + g.id) === 0) c.active = c.active === 'w' ? 'b' : 'w'
     })
     moveCounter++
+    // Make a move every 3 seconds — THEN switch active player
     if (moveCounter % 3 === 0) {
       const game = liveGames[Math.floor(moveCounter / 3) % liveGames.length]
       const eng  = liveEngines[game.id]
@@ -215,8 +241,12 @@ onMounted(() => {
         if (!s.over && s.moves.length > 0) {
           const mv = eng.bestMove()
           if (mv) {
+            const dest = mv.path[mv.path.length - 1]
+            lastMoves[game.id] = { from: mv.from, to: dest }
             eng.makeMove(mv)
             miniBoards[game.id] = eng.getState().board.map(r => [...r])
+            // Switch active player only after a move is made
+            clocks[game.id].active = clocks[game.id].active === 'w' ? 'b' : 'w'
           }
         }
       }
@@ -238,16 +268,16 @@ onUnmounted(() => {
 <section class="hero">
   <div class="hero-inner">
     <div class="hero-left">
-      <p class="eyebrow">International Draughts · Online Arena</p>
+      <p class="eyebrow">{{ t.home.eyebrow }}</p>
       <h1 class="hero-title">
-        World<br>
-        <span class="hero-em">Checkers</span>
+        {{ t.home.heroTitle1 }}<br>
+        <span class="hero-em">{{ t.home.heroTitle2 }}</span>
       </h1>
-      <p class="hero-sub">Play International Draughts against players worldwide. Sharpen your game. Climb the rankings.</p>
+      <p class="hero-sub">{{ t.home.heroSub }}</p>
       <div class="hero-btns">
-        <button class="btn-hero-primary" @click="router.push('/play')">Play Now</button>
+        <button class="btn-hero-primary" @click="router.push('/play')">{{ t.home.playNow }}</button>
         <button class="btn-hero-ghost" @click="router.push(isLoggedIn ? '/profile' : '/register')">
-          {{ isLoggedIn ? 'My Profile' : 'Create Free Account' }}
+          {{ isLoggedIn ? t.home.myProfile : t.home.createAccount }}
         </button>
       </div>
     </div>
@@ -256,17 +286,17 @@ onUnmounted(() => {
     <div class="stat-row">
       <div class="stat">
         <span class="stat-n">{{ tournamentsToday }}</span>
-        <span class="stat-l">Tournaments Today</span>
+        <span class="stat-l">{{ t.home.tournamentsToday }}</span>
       </div>
       <div class="stat-sep"/>
       <div class="stat">
         <span class="stat-n">{{ playersOnline.toLocaleString() }}</span>
-        <span class="stat-l">Players Online</span>
+        <span class="stat-l">{{ t.home.playersOnline }}</span>
       </div>
       <div class="stat-sep"/>
       <div class="stat">
         <span class="stat-n">{{ gamesPlayed.toLocaleString() }}</span>
-        <span class="stat-l">Games Today</span>
+        <span class="stat-l">{{ t.home.gamesToday }}</span>
       </div>
     </div>
   </div>
@@ -275,9 +305,9 @@ onUnmounted(() => {
 <!-- ════════════════════ TOURNAMENTS ════════════════════ -->
 <section class="section">
   <div class="sec-head">
-    <span class="sec-label">Today's Tournaments</span>
-    <span class="sec-count">{{ tournaments.length }} scheduled</span>
-    <button class="sec-link" @click="router.push('/tournaments')">View all</button>
+    <span class="sec-label">{{ t.home.todaysTournaments }}</span>
+    <span class="sec-count">{{ tournaments.length }} {{ t.home.scheduled }}</span>
+    <button class="sec-link" @click="router.push('/tournaments')">{{ t.home.viewAll }}</button>
   </div>
 
   <div class="timeline-scroll">
@@ -309,10 +339,10 @@ onUnmounted(() => {
   <div class="sec-head">
     <span class="live-indicator">
       <span class="live-dot"/>
-      <span class="live-txt">Live</span>
+      <span class="live-txt">{{ t.home.live }}</span>
     </span>
-    <span class="sec-label">Active Games</span>
-    <span class="sec-count">{{ liveGames.length }} in progress</span>
+    <span class="sec-label">{{ t.home.activeGames }}</span>
+    <span class="sec-count">{{ liveGames.length }} {{ t.home.inProgress }}</span>
   </div>
 
   <div class="games-grid">
@@ -321,7 +351,10 @@ onUnmounted(() => {
       <!-- Players row -->
       <div class="players-row">
         <div class="p-block">
-          <div class="p-ava p-ava-dark">{{ game.white[0] }}</div>
+          <div class="p-ava p-ava-dark">
+              <img v-if="game.wImg" :src="game.wImg" class="ava-img" :alt="game.white" @error="avaErr($event, game, 'w')">
+              <span v-else>{{ game.white[0] }}</span>
+            </div>
           <div class="p-info">
             <span class="p-name">{{ game.white }}</span>
             <span class="p-rating">{{ game.wR }}</span>
@@ -336,7 +369,10 @@ onUnmounted(() => {
             <span class="p-name">{{ game.black }}</span>
             <span class="p-rating">{{ game.bR }}</span>
           </div>
-          <div class="p-ava p-ava-light">{{ game.black[0] }}</div>
+          <div class="p-ava p-ava-light">
+              <img v-if="game.bImg" :src="game.bImg" class="ava-img" :alt="game.black" @error="avaErr($event, game, 'b')">
+              <span v-else>{{ game.black[0] }}</span>
+            </div>
         </div>
       </div>
 
@@ -356,7 +392,9 @@ onUnmounted(() => {
       <div class="mini-board">
         <template v-for="(row, ri) in miniBoards[game.id]" :key="ri">
           <div v-for="(piece, ci) in row" :key="ri+'-'+ci"
-            class="mini-sq" :style="{ background: cellBg(ri, ci) }">
+            class="mini-sq"
+            :class="{ 'mini-sq-move': isLastMoveSq(game.id, ri, ci) }"
+            :style="{ background: cellBg(ri, ci) }">
             <div v-if="piece !== 0" class="mini-piece"
               :style="{
                 background: pieceBg(piece),
@@ -370,7 +408,7 @@ onUnmounted(() => {
         </template>
       </div>
 
-      <div class="watch-cta">Watch Game</div>
+      <div class="watch-cta">{{ t.home.watchGame }}</div>
     </div>
   </div>
 </section>
@@ -378,19 +416,19 @@ onUnmounted(() => {
 <!-- ═══════════════════ MEMBERSHIP ═══════════════════ -->
 <section class="section section-upgrade">
   <div class="upgrade-inner">
-    <p class="upgrade-eyebrow">Membership</p>
-    <h2 class="upgrade-title">Play Without Limits</h2>
-    <p class="upgrade-sub">Unlock analysis, courses, and advanced tools to accelerate your improvement.</p>
+    <p class="upgrade-eyebrow">{{ t.home.membershipEyebrow }}</p>
+    <h2 class="upgrade-title">{{ t.home.membershipTitle }}</h2>
+    <p class="upgrade-sub">{{ t.home.membershipSub }}</p>
 
     <!-- Billing toggle -->
     <div class="billing-toggle">
-      <span :class="{ 'tog-on': !yearly }" @click="yearly=false">Monthly</span>
+      <span :class="{ 'tog-on': !yearly }" @click="yearly=false">{{ t.home.monthly }}</span>
       <button class="tog-switch" @click="yearly=!yearly">
         <span class="tog-thumb" :class="{ 'tog-right': yearly }"/>
       </button>
       <span :class="{ 'tog-on': yearly }" @click="yearly=true">
-        Yearly
-        <span class="save-tag">Save 41%</span>
+        {{ t.home.yearly }}
+        <span class="save-tag">{{ t.home.save }}</span>
       </span>
     </div>
 
@@ -399,7 +437,7 @@ onUnmounted(() => {
       <!-- Header -->
       <div class="pt-grid pt-head-row">
         <div class="pt-feature-col">
-          <span class="pt-feature-label">Features</span>
+          <span class="pt-feature-label">{{ t.home.featuresCol }}</span>
         </div>
         <div v-for="plan in plans" :key="plan.id" class="pt-plan-col" :class="{ 'pt-highlight': plan.highlight }">
           <div v-if="plan.badge" class="pt-badge">{{ plan.badge }}</div>
@@ -421,11 +459,11 @@ onUnmounted(() => {
       <!-- Price row -->
       <div class="pt-grid pt-price-row">
         <div class="pt-feature-col">
-          <span class="price-note">*Billed annually</span>
+          <span class="price-note">{{ t.home.billedAnnually }}</span>
         </div>
         <div v-for="plan in plans" :key="plan.id" class="pt-plan-col" :class="{ 'pt-highlight': plan.highlight }">
           <template v-if="plan.id === 'free'">
-            <div class="price-free">Free Forever</div>
+            <div class="price-free">{{ t.home.freeForever }}</div>
           </template>
           <template v-else>
             <div v-if="yearly" class="price-was">{{ plan.monthlyPrice.toLocaleString() }} KZT/mo</div>
@@ -441,7 +479,7 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <p class="price-footer">All plans include taxes. Subscriptions renew automatically and can be cancelled anytime.</p>
+    <p class="price-footer">{{ t.home.subscriptionNote }}</p>
   </div>
 </section>
 
@@ -452,7 +490,7 @@ onUnmounted(() => {
       <div class="modal-header">
         <div>
           <div class="modal-title">{{ watching.white }} vs {{ watching.black }}</div>
-          <div class="modal-sub">{{ watching.tc }} · International Draughts 10×10</div>
+          <div class="modal-sub">{{ watching.tc }} · {{ t.home.watchSubtitle }}</div>
         </div>
         <button class="modal-close" @click="closeWatch">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -477,7 +515,9 @@ onUnmounted(() => {
       <div class="watch-board">
         <template v-for="(row, ri) in watchBoard" :key="ri">
           <div v-for="(piece, ci) in row" :key="ri+'-'+ci"
-            class="watch-sq" :style="{ background: watchCellBg(ri, ci) }">
+            class="watch-sq"
+            :class="{ 'watch-sq-move': watchLastMove && (watchLastMove.from.r===ri && watchLastMove.from.c===ci || watchLastMove.to.r===ri && watchLastMove.to.c===ci) }"
+            :style="{ background: watchCellBg(ri, ci) }">
             <div v-if="piece !== 0" class="watch-piece"
               :style="{
                 background: pieceBg(piece),
@@ -492,8 +532,8 @@ onUnmounted(() => {
       </div>
 
       <div class="modal-status">
-        <span v-if="!watchDone" class="status-live">Live</span>
-        <span v-else class="status-done">Game over</span>
+        <span v-if="!watchDone" class="status-live">{{ t.home.statusLive }}</span>
+        <span v-else class="status-done">{{ t.home.statusDone }}</span>
       </div>
     </div>
   </div>
@@ -729,7 +769,7 @@ onUnmounted(() => {
 /* ── LIVE GAMES ── */
 .games-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   padding: 20px 48px 48px;
   max-width: 1400px;
@@ -762,6 +802,14 @@ onUnmounted(() => {
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 0.74rem;
   flex-shrink: 0;
+  overflow: hidden;
+  padding: 0;
+}
+.ava-img {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
 }
 .p-ava-dark  { background: var(--ink4); color: var(--text1); border: 1px solid var(--border2); }
 .p-ava-light { background: rgba(220,210,190,0.15); color: var(--text0); border: 1px solid rgba(220,210,190,0.2); }
@@ -815,7 +863,16 @@ onUnmounted(() => {
   overflow: hidden;
   aspect-ratio: 1;
 }
-.mini-sq { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+.mini-sq { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+.mini-sq-move::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(196, 148, 48, 0.45);
+  box-shadow: inset 0 0 0 2px rgba(196, 148, 48, 0.85);
+  pointer-events: none;
+  z-index: 2;
+}
 .mini-piece { width: 72%; height: 72%; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 .mini-crown { font-size: 36%; line-height: 1; }
 
@@ -1079,7 +1136,16 @@ onUnmounted(() => {
   overflow: hidden;
   aspect-ratio: 1;
 }
-.watch-sq { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+.watch-sq { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+.watch-sq-move::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(196, 148, 48, 0.38);
+  box-shadow: inset 0 0 0 2px rgba(196, 148, 48, 0.85);
+  pointer-events: none;
+  z-index: 2;
+}
 .watch-piece { width: 76%; height: 76%; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 .watch-crown { font-size: 38%; line-height: 1; }
 
@@ -1093,7 +1159,7 @@ onUnmounted(() => {
   .hero-title { font-size: 2.6rem; }
   .stat-row { flex-direction: column; gap: 16px; padding: 16px 20px; }
   .stat-sep { width: 40px; height: 1px; }
-  .games-grid { padding: 20px; grid-template-columns: 1fr; }
+  .games-grid { padding: 20px; grid-template-columns: repeat(2, 1fr); }
   .section-upgrade { padding: 44px 20px 60px; }
 }
 @media (max-width: 600px) {
@@ -1101,5 +1167,6 @@ onUnmounted(() => {
   .hero-btns { flex-direction: column; }
   .pt-grid { grid-template-columns: 1fr repeat(2, 1fr); }
   .pt-plan-col:nth-child(n+4) { display: none; }
+  .games-grid { grid-template-columns: 1fr; }
 }
 </style>

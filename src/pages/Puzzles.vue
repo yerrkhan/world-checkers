@@ -1,78 +1,138 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Draughts10 } from '../game/draughts10.js'
+import { useI18n } from '../i18n.js'
 
-const puzzles = [
+const { t, lang } = useI18n()
+
+// ── Puzzle data ──────────────────────────────────────────────────────────────
+
+const puzzlesEN = [
   {
     id: 1, title: 'Forced Capture', difficulty: 'Beginner',
     description: 'White must capture the black piece. Find the only legal move.',
     hint: 'Look diagonally forward — a capture is mandatory!',
-    solved: false,
   },
   {
     id: 2, title: 'Double Jump', difficulty: 'Beginner',
     description: 'White can capture two pieces in a single turn. Find the chain capture.',
     hint: 'After the first capture, look for another piece to jump over.',
-    solved: false,
   },
   {
     id: 3, title: 'King Me!', difficulty: 'Beginner',
     description: 'Move your piece to the back row to become a King.',
     hint: 'Kings can move backwards — advance to row 1!',
-    solved: false,
   },
   {
     id: 4, title: 'Protect Your Piece', difficulty: 'Beginner',
     description: 'Your piece is about to be captured. Find the defensive move.',
     hint: 'Move the threatened piece to a safe square.',
-    solved: false,
   },
   {
     id: 5, title: 'Corner Trap', difficulty: 'Beginner',
     description: 'Force the black piece into a corner where it cannot move.',
     hint: 'Surround the piece from two diagonal directions.',
-    solved: false,
   },
   {
     id: 6, title: 'The Sacrifice', difficulty: 'Beginner',
     description: 'Give up one piece to gain two. Find the winning combination.',
     hint: 'Sometimes losing a piece leads to a better position.',
-    solved: false,
   },
   {
     id: 7, title: 'King vs Piece', difficulty: 'Beginner',
     description: 'Your king has a positional advantage. Find the winning move.',
     hint: 'Kings can move backward — use it!',
-    solved: false,
   },
   {
     id: 8, title: 'Run to Safety', difficulty: 'Beginner',
     description: 'You are down a piece but can escape to safety and promote.',
     hint: 'Advance your piece to become a King and change the game.',
-    solved: false,
   },
   {
     id: 9, title: 'The Bridge', difficulty: 'Beginner',
     description: 'Two pieces working together can control the board. Find the formation.',
     hint: 'Position two pieces diagonally adjacent for mutual protection.',
-    solved: false,
   },
   {
     id: 10, title: 'Endgame Finish', difficulty: 'Beginner',
     description: 'You have two kings vs one piece. Find the fastest win.',
     hint: 'Use both kings to corner the lone piece.',
-    solved: false,
   },
 ]
 
-const activePuzzle = ref(null)
-const showHint     = ref(false)
-const solvedCount  = ref(0)
-const localGame    = ref(null)
-const localBoard   = ref([])
+const puzzlesRU = [
+  {
+    id: 1, title: 'Обязательное взятие', difficulty: 'Новичок',
+    description: 'Белые обязаны взять чёрную шашку. Найдите единственный допустимый ход.',
+    hint: 'Смотрите по диагонали вперёд — взятие обязательно!',
+  },
+  {
+    id: 2, title: 'Двойной прыжок', difficulty: 'Новичок',
+    description: 'Белые могут взять две шашки за один ход. Найдите серию взятий.',
+    hint: 'После первого взятия ищите ещё одну шашку для прыжка.',
+  },
+  {
+    id: 3, title: 'Стань дамкой!', difficulty: 'Новичок',
+    description: 'Переведите свою шашку на последнюю горизонталь, чтобы она стала дамкой.',
+    hint: 'Дамки ходят назад — доберитесь до первой горизонтали!',
+  },
+  {
+    id: 4, title: 'Защити шашку', difficulty: 'Новичок',
+    description: 'Вашу шашку сейчас возьмут. Найдите защитный ход.',
+    hint: 'Уведите атакованную шашку на безопасную клетку.',
+  },
+  {
+    id: 5, title: 'Ловушка в углу', difficulty: 'Новичок',
+    description: 'Загоните чёрную шашку в угол, откуда она не сможет выйти.',
+    hint: 'Окружите шашку с двух диагональных направлений.',
+  },
+  {
+    id: 6, title: 'Жертва', difficulty: 'Новичок',
+    description: 'Пожертвуйте одну шашку, чтобы взять две. Найдите выигрышную комбинацию.',
+    hint: 'Иногда потеря шашки ведёт к лучшей позиции.',
+  },
+  {
+    id: 7, title: 'Дамка против шашки', difficulty: 'Новичок',
+    description: 'Ваша дамка имеет позиционное преимущество. Найдите выигрышный ход.',
+    hint: 'Дамки ходят назад — используйте это!',
+  },
+  {
+    id: 8, title: 'Путь к дамке', difficulty: 'Новичок',
+    description: 'Вы отстаёте по материалу, но можете спастись и провести дамку.',
+    hint: 'Ведите шашку вперёд, чтобы стать дамкой и изменить ход игры.',
+  },
+  {
+    id: 9, title: 'Мост', difficulty: 'Новичок',
+    description: 'Две шашки вместе могут контролировать доску. Найдите правильное построение.',
+    hint: 'Расположите две шашки по диагонали рядом для взаимной защиты.',
+  },
+  {
+    id: 10, title: 'Финиш эндшпиля', difficulty: 'Новичок',
+    description: 'У вас две дамки против одной шашки. Найдите самый быстрый путь к победе.',
+    hint: 'Используйте обе дамки, чтобы загнать одинокую шашку в угол.',
+  },
+]
+
+// Reactive puzzle list switches with language
+const puzzleData = computed(() => lang.value === 'ru' ? puzzlesRU : puzzlesEN)
+
+// ── Solved state (keyed by puzzle id, survives language switch) ───────────────
+const solvedIds   = ref(new Set())
+const solvedCount = computed(() => solvedIds.value.size)
+
+// ── Active puzzle ─────────────────────────────────────────────────────────────
+const activePuzzleId = ref(null)
+const activePuzzle   = computed(() =>
+  activePuzzleId.value !== null
+    ? puzzleData.value.find(p => p.id === activePuzzleId.value)
+    : null
+)
+const showHint   = ref(false)
+const localGame  = ref(null)
+const localBoard = ref([])
 
 const openPuzzle = (p) => {
-  activePuzzle.value = p
+  activePuzzleId.value = p.id
   showHint.value = false
   localGame.value = new Draughts10()
   const seed = p.id
@@ -85,13 +145,14 @@ const openPuzzle = (p) => {
 }
 
 const markSolved = () => {
-  if (!activePuzzle.value.solved) {
-    activePuzzle.value.solved = true
-    solvedCount.value++
+  if (!solvedIds.value.has(activePuzzleId.value)) {
+    solvedIds.value = new Set([...solvedIds.value, activePuzzleId.value])
   }
 }
 
 const cellBg = (ri, ci) => (ri + ci) % 2 === 1 ? '#769656' : '#eeeed2'
+
+const hintLabel = computed(() => lang.value === 'ru' ? 'Подсказка' : 'Hint')
 </script>
 
 <template>
@@ -100,27 +161,27 @@ const cellBg = (ri, ci) => (ri + ci) % 2 === 1 ? '#769656' : '#eeeed2'
   <!-- Header -->
   <div class="page-header">
     <div class="page-header-left">
-      <h1 class="page-title">Puzzles</h1>
-      <p class="page-sub">Train your tactics with these beginner checkers puzzles.</p>
+      <h1 class="page-title">{{ t.puzzles.title }}</h1>
+      <p class="page-sub">{{ t.puzzles.sub }}</p>
     </div>
-    <div class="progress-chip">{{ solvedCount }} / {{ puzzles.length }} solved</div>
+    <div class="progress-chip">{{ solvedCount }} / {{ puzzleData.length }} {{ t.puzzles.solved }}</div>
   </div>
 
   <!-- Progress bar -->
   <div class="progress-track">
-    <div class="progress-fill" :style="{ width: (solvedCount / puzzles.length * 100) + '%' }"/>
+    <div class="progress-fill" :style="{ width: (solvedCount / puzzleData.length * 100) + '%' }"/>
   </div>
 
   <!-- Puzzle grid -->
   <div class="puzzle-grid">
     <div
-      v-for="puzzle in puzzles"
+      v-for="puzzle in puzzleData"
       :key="puzzle.id"
       class="puzzle-card"
-      :class="{ 'puzzle-solved': puzzle.solved }"
+      :class="{ 'puzzle-solved': solvedIds.has(puzzle.id) }"
       @click="openPuzzle(puzzle)"
     >
-      <div v-if="puzzle.solved" class="solved-badge">✓</div>
+      <div v-if="solvedIds.has(puzzle.id)" class="solved-badge">✓</div>
 
       <div class="puzzle-num">#{{ puzzle.id }}</div>
       <div class="puzzle-diff">{{ puzzle.difficulty }}</div>
@@ -131,14 +192,14 @@ const cellBg = (ri, ci) => (ri + ci) % 2 === 1 ? '#769656' : '#eeeed2'
 
   <!-- Puzzle modal -->
   <Teleport to="body">
-    <div v-if="activePuzzle" class="modal-overlay" @click.self="activePuzzle = null">
+    <div v-if="activePuzzle" class="modal-overlay" @click.self="activePuzzleId = null">
       <div class="modal">
         <div class="modal-head">
           <div>
-            <div class="modal-eyebrow">Puzzle {{ activePuzzle.id }}</div>
+            <div class="modal-eyebrow">{{ t.puzzles.puzzleLabel }} {{ activePuzzle.id }}</div>
             <h2 class="modal-title">{{ activePuzzle.title }}</h2>
           </div>
-          <button class="modal-close" @click="activePuzzle = null">
+          <button class="modal-close" @click="activePuzzleId = null">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
@@ -174,20 +235,20 @@ const cellBg = (ri, ci) => (ri + ci) % 2 === 1 ? '#769656' : '#eeeed2'
 
         <!-- Hint -->
         <div v-if="showHint" class="hint-box">
-          <span class="hint-label">Hint</span>
+          <span class="hint-label">{{ hintLabel }}</span>
           {{ activePuzzle.hint }}
         </div>
 
         <!-- Actions -->
         <div class="modal-actions">
           <button class="btn-secondary" @click="showHint = !showHint">
-            {{ showHint ? 'Hide hint' : 'Show hint' }}
+            {{ showHint ? t.puzzles.hideHint : t.puzzles.showHint }}
           </button>
-          <button class="btn-primary" @click="markSolved(); activePuzzle = null">
-            Mark as solved
+          <button class="btn-primary" @click="markSolved(); activePuzzleId = null">
+            {{ t.puzzles.markSolved }}
           </button>
-          <RouterLink to="/game?tc=rapid&mode=local" class="btn-secondary" @click="activePuzzle = null">
-            Practice on board
+          <RouterLink to="/game?tc=rapid&mode=local" class="btn-secondary" @click="activePuzzleId = null">
+            {{ t.puzzles.practice }}
           </RouterLink>
         </div>
       </div>

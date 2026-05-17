@@ -1,13 +1,16 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useI18n } from '../i18n.js'
 
-const lessons = [
+const { t, lang } = useI18n()
+
+const lessonsEN = [
   {
     id: 1, title: 'How to Play Checkers',
     duration: '5 min', category: 'Basics',
     description: 'Learn the fundamental rules: board setup, how pieces move, capturing, and winning conditions.',
     content: [
-      { heading: 'The Board', text: 'Checkers is played on an 10×10 board in International Draughts. Pieces only move on the dark squares.' },
+      { heading: 'The Board', text: 'Checkers is played on a 10×10 board in International Draughts. Pieces only move on the dark squares.' },
       { heading: 'Moving Pieces', text: 'Regular pieces move diagonally forward one square. They cannot move backward — until promoted.' },
       { heading: 'Capturing', text: 'Jump over an opponent\'s piece diagonally to capture it. Captures are mandatory — if you can jump, you must.' },
       { heading: 'Winning', text: 'You win by capturing all of your opponent\'s pieces, or by blocking them so they cannot move.' },
@@ -59,6 +62,66 @@ const lessons = [
   },
 ]
 
+const lessonsRU = [
+  {
+    id: 1, title: 'Как играть в шашки',
+    duration: '5 мин', category: 'Основы',
+    description: 'Изучите основные правила: расстановка, движение шашек, взятие и условия победы.',
+    content: [
+      { heading: 'Доска', text: 'В международных шашках используется доска 10×10. Шашки ходят только по тёмным клеткам.' },
+      { heading: 'Ход шашки', text: 'Обычная шашка ходит вперёд по диагонали на одну клетку. Ход назад возможен только для дамки.' },
+      { heading: 'Взятие', text: 'Перепрыгните через шашку соперника по диагонали, чтобы взять её. Взятие обязательно — если можете бить, вы обязаны это сделать.' },
+      { heading: 'Победа', text: 'Победа достигается взятием всех шашек соперника или лишением его всех ходов.' },
+    ],
+  },
+  {
+    id: 2, title: 'Дамки — главная сила',
+    duration: '4 мин', category: 'Основы',
+    description: 'Узнайте, как шашки становятся дамками и почему дамки так сильны в международных шашках.',
+    content: [
+      { heading: 'Получение дамки', text: 'Когда шашка достигает последней горизонтали соперника, она становится дамкой и получает огромную силу.' },
+      { heading: 'Ход дамки', text: 'Дамка ходит по диагонали в любом направлении на любое количество клеток (дамка-летун).' },
+      { heading: 'Взятие дамкой', text: 'Дамка может бить в любом направлении, что делает её гораздо сильнее обычной шашки.' },
+      { heading: 'Эндшпиль дамки', text: 'Одна дамка при правильной игре способна победить несколько простых шашек соперника.' },
+    ],
+  },
+  {
+    id: 3, title: 'Тактика: вынужденные взятия',
+    duration: '6 мин', category: 'Тактика',
+    description: 'Используйте правило обязательного взятия в свою пользу и вынуждайте соперника к невыгодным позициям.',
+    content: [
+      { heading: 'Обязательное взятие', text: 'В шашках, если есть возможность бить, вы обязаны это сделать. Это правило можно использовать!' },
+      { heading: 'Жертва', text: 'Пожертвуйте шашку сопернику. Когда он её возьмёт, ваша шашка бьёт сразу две его шашки.' },
+      { heading: 'Серийные взятия', text: 'Планируйте многоходовые цепочки взятий, где одна шашка берёт 3 и более шашек за один ход.' },
+      { heading: 'Форсирование', text: 'Создавайте позиции, в которых любой ход соперника ведёт к выгодному для вас взятию.' },
+    ],
+  },
+  {
+    id: 4, title: 'Принципы дебюта',
+    duration: '7 мин', category: 'Стратегия',
+    description: 'Правильно начинайте партии. Изучите ключевые принципы, дающие сильную позицию с первых ходов.',
+    content: [
+      { heading: 'Контроль центра', text: 'Занимайте центральные клетки — шашки там контролируют больше пространства на доске.' },
+      { heading: 'Защита задней горизонтали', text: 'Не спешите выдвигать шашки с задней линии. Это не даст сопернику легко получить дамку.' },
+      { heading: 'Группировка', text: 'Продвигайте шашки связными группами. Изолированные шашки легко берутся.' },
+      { heading: 'Избегайте краёв', text: 'Шашки на краях доски имеют меньше ходов и легче поддаются окружению.' },
+    ],
+  },
+  {
+    id: 5, title: 'Мастерство эндшпиля',
+    duration: '8 мин', category: 'Продвинутый',
+    description: 'В эндшпиле техника игры решает всё. Научитесь реализовывать преимущество.',
+    content: [
+      { heading: 'Две дамки побеждают', text: 'Две дамки против одной простой: используйте обе дамки, чтобы загнать её в угол.' },
+      { heading: 'Оппозиция', text: 'Поставьте свою дамку прямо перед дамкой соперника, чтобы ограничить её движение.' },
+      { heading: 'Не спешите', text: 'Медленное методичное наступление несколькими шашками надёжно ведёт к победе.' },
+      { heading: 'Время для дамки', text: 'В эндшпиле гоните шашку в дамки, одновременно блокируя прорыв соперника.' },
+    ],
+  },
+]
+
+const lessons = computed(() => lang.value === 'ru' ? lessonsRU : lessonsEN)
+
 const activeLesson   = ref(null)
 const currentStep    = ref(0)
 const completedLessons = ref(new Set())
@@ -77,11 +140,18 @@ const nextStep = () => {
   }
 }
 
-const categoryMeta = {
-  Basics:   { color: '#3a6caa', bg: 'rgba(58,108,170,0.12)' },
-  Tactics:  { color: '#c49430', bg: 'rgba(196,148,48,0.12)' },
-  Strategy: { color: '#2a8f5c', bg: 'rgba(42,143,92,0.12)'  },
-  Advanced: { color: '#8a4cb0', bg: 'rgba(138,76,176,0.12)' },
+const catStyle = (cat) => {
+  const map = {
+    'Basics':    { color: '#3a6caa', bg: 'rgba(58,108,170,0.12)' },
+    'Tactics':   { color: '#c49430', bg: 'rgba(196,148,48,0.12)' },
+    'Strategy':  { color: '#2a8f5c', bg: 'rgba(42,143,92,0.12)' },
+    'Advanced':  { color: '#8a4cb0', bg: 'rgba(138,76,176,0.12)' },
+    'Основы':         { color: '#3a6caa', bg: 'rgba(58,108,170,0.12)' },
+    'Тактика':        { color: '#c49430', bg: 'rgba(196,148,48,0.12)' },
+    'Стратегия':      { color: '#2a8f5c', bg: 'rgba(42,143,92,0.12)' },
+    'Продвинутый':    { color: '#8a4cb0', bg: 'rgba(138,76,176,0.12)' },
+  }
+  return map[cat] || { color: '#888', bg: 'rgba(136,136,136,0.1)' }
 }
 </script>
 
@@ -91,11 +161,11 @@ const categoryMeta = {
   <!-- Header -->
   <div class="page-header">
     <div class="page-header-left">
-      <h1 class="page-title">Lessons</h1>
-      <p class="page-sub">Master checkers step by step — from basics to advanced strategy.</p>
+      <h1 class="page-title">{{ t.lessons.title }}</h1>
+      <p class="page-sub">{{ t.lessons.sub }}</p>
     </div>
     <div class="progress-chip">
-      {{ completedLessons.size }} / {{ lessons.length }} completed
+      {{ completedLessons.size }} / {{ lessons.length }} {{ t.lessons.completed }}
     </div>
   </div>
 
@@ -112,8 +182,8 @@ const categoryMeta = {
       <div class="lesson-meta">
         <span class="lesson-cat"
           :style="{
-            color: categoryMeta[lesson.category]?.color || '#888',
-            background: categoryMeta[lesson.category]?.bg || 'rgba(136,136,136,0.1)',
+            color: catStyle(lesson.category).color,
+            background: catStyle(lesson.category).bg,
           }">{{ lesson.category }}</span>
         <span class="lesson-dur">{{ lesson.duration }}</span>
       </div>
@@ -137,11 +207,11 @@ const categoryMeta = {
     <div class="premium-content">
       <div class="premium-icon">★</div>
       <div class="premium-text">
-        <div class="premium-title">Unlock AI-Powered Lessons</div>
-        <div class="premium-desc">Personalized lessons based on your mistakes, advanced strategy courses, and skill improvement tracking.</div>
+        <div class="premium-title">{{ t.lessons.upgradeTitle }}</div>
+        <div class="premium-desc">{{ t.lessons.upgradeDesc }}</div>
       </div>
     </div>
-    <button class="btn-primary">Upgrade to Premium</button>
+    <button class="btn-primary">{{ t.lessons.upgradeBtn }}</button>
   </div>
 
   <!-- Lesson modal -->
@@ -152,7 +222,7 @@ const categoryMeta = {
         <div class="modal-head">
           <div>
             <div class="modal-eyebrow">
-              Lesson {{ activeLesson.id }} · Step {{ currentStep + 1 }} of {{ activeLesson.content.length }}
+              {{ t.lessons.lessonLabel }} {{ activeLesson.id }} · {{ t.lessons.stepOf }} {{ currentStep + 1 }} {{ t.lessons.of }} {{ activeLesson.content.length }}
             </div>
             <h2 class="modal-title">{{ activeLesson.title }}</h2>
           </div>
@@ -177,9 +247,9 @@ const categoryMeta = {
 
         <!-- Navigation -->
         <div class="modal-nav">
-          <button v-if="currentStep > 0" class="btn-secondary" @click="currentStep--">Back</button>
+          <button v-if="currentStep > 0" class="btn-secondary" @click="currentStep--">{{ t.lessons.back }}</button>
           <button class="btn-primary" style="flex:1;" @click="nextStep">
-            {{ currentStep < activeLesson.content.length - 1 ? 'Next' : 'Complete Lesson' }}
+            {{ currentStep < activeLesson.content.length - 1 ? t.lessons.next : t.lessons.completeLesson }}
           </button>
         </div>
       </div>
@@ -260,7 +330,7 @@ const categoryMeta = {
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
-  min-width: 84px;
+  min-width: 96px;
   flex-shrink: 0;
   margin-right: 16px;
 }

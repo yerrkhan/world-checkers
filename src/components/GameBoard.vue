@@ -1,11 +1,13 @@
 <script setup>
-import { ref, computed, onUnmounted } from 'vue'
-import { Checkers } from '@ayshrj/checkers.js'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { RussianCheckers } from '../game/russianCheckers.js'
 
 const props = defineProps({
-  boardTheme: { type: String, default: 'classic' },
-  gameMode: { type: String, default: 'local' },
-  timeControl: { type: Object, default: () => ({ type: 'rapid', seconds: 600 }) },
+  boardTheme:    { type: String, default: 'classic' },
+  gameMode:      { type: String, default: 'local' },
+  timeControl:   { type: Object, default: () => ({ type: 'rapid', seconds: 600 }) },
+  botDifficulty: { type: String, default: 'medium' },  // 'easy' | 'medium' | 'hard'
+  playerSide:    { type: String, default: 'white' },   // 'white' | 'black'
 })
 
 const emit = defineEmits(['gameOver', 'moveMade'])
@@ -16,9 +18,9 @@ const boardThemes = {
   midnight: { light: '#6e85b5', dark: '#3d4b6e' },
 }
 
-const game = ref(new Checkers())
+const game = ref(new RussianCheckers())
 const board = ref([])
-const currentTurn = ref('red')
+const currentTurn = ref('white')
 const allowedMoves = ref([])
 const gameStatus = ref('playing')
 const statusMsg = ref('')
@@ -26,7 +28,18 @@ const moveHistory = ref([])
 const selectedPos = ref(null)
 const validMoveTargets = ref([])
 const lastMove = ref(null)
-const timers = ref({ red: props.timeControl.seconds, black: props.timeControl.seconds })
+const timers = ref({ white: props.timeControl.seconds, black: props.timeControl.seconds })
+const botDepth = computed(() => {
+  if (props.botDifficulty === 'easy') return 1
+  if (props.botDifficulty === 'hard') return 5
+  return 3  // medium
+})
+const humanColor = computed(() => props.playerSide === 'black' ? 'black' : 'white')
+
+// Board orientation — when playing as black, flip so black pieces are at the bottom
+const flipped = computed(() => props.playerSide === 'black')
+const rowIndices = computed(() => flipped.value ? [7,6,5,4,3,2,1,0] : [0,1,2,3,4,5,6,7])
+const colIndices = computed(() => flipped.value ? [7,6,5,4,3,2,1,0] : [0,1,2,3,4,5,6,7])
 const timerInterval = ref(null)
 const botThinking = ref(false)
 const noTimer = computed(() => props.timeControl.type === 'none')
@@ -58,10 +71,10 @@ const coachMessages = {
 const coachMessage = computed(() => {
   const w = matchResult.value.winner
   if (props.gameMode === 'vsBot') {
-    if (w === 'red_wins') return coachMessages.win[Math.floor(Math.random() * 3)]   // human=white wins
+    if (w === `${humanColor.value}_wins`) return coachMessages.win[Math.floor(Math.random() * 3)]
     return coachMessages.botLoss[Math.floor(Math.random() * 3)]
   }
-  if (w === 'red_wins') return coachMessages.win[Math.floor(Math.random() * 3)]
+  if (w === 'white_wins') return coachMessages.win[Math.floor(Math.random() * 3)]
   return coachMessages.loss[Math.floor(Math.random() * 3)]
 })
 
@@ -82,14 +95,14 @@ const updateFromEngine = () => {
   currentTurn.value = state.turn
   allowedMoves.value = state.allowedMoves
   if (allowedMoves.value.length === 0) {
-    const winner = currentTurn.value === 'red' ? 'black_wins' : 'red_wins'
+    const winner = currentTurn.value === 'white' ? 'black_wins' : 'white_wins'
     gameStatus.value = winner
     statusMsg.value = winner === 'black_wins' ? 'Black wins!' : 'White wins!'
     stopTimer()
     emit('gameOver', { winner })
     triggerMatchReport(winner, 'no_moves')
   } else {
-    statusMsg.value = `${currentTurn.value === 'red' ? 'White' : 'Black'}'s turn`
+    statusMsg.value = `${currentTurn.value === 'white' ? 'White' : 'Black'}'s turn`
   }
 }
 
@@ -102,9 +115,9 @@ const startTimer = () => {
     timers.value[side]--
     if (timers.value[side] <= 0) {
       timers.value[side] = 0
-      const winner = side === 'red' ? 'black_wins' : 'red_wins'
+      const winner = side === 'white' ? 'black_wins' : 'white_wins'
       gameStatus.value = winner
-      statusMsg.value = `${side === 'red' ? 'Black' : 'White'} wins on time!`
+      statusMsg.value = `${side === 'white' ? 'Black' : 'White'} wins on time!`
       stopTimer()
       emit('gameOver', { winner, reason: 'time' })
       triggerMatchReport(winner, 'time')
@@ -124,7 +137,7 @@ const formatTime = (secs) => {
 
 const handleSquareClick = (row, col) => {
   if (gameStatus.value !== 'playing') return
-  if (props.gameMode === 'vsBot' && currentTurn.value === 'black') return
+  if (props.gameMode === 'vsBot' && currentTurn.value !== humanColor.value) return
   if (botThinking.value) return
 
   const cell = board.value[row]?.[col]
@@ -167,7 +180,7 @@ const handleSquareClick = (row, col) => {
 const runBotMove = () => {
   botThinking.value = true
   setTimeout(() => {
-    const best = game.value.bestMove(3)
+    const best = game.value.bestMove(botDepth.value)
     if (best) {
       const from = { ...best.from }
       const to = best.path[best.path.length - 1]
@@ -189,7 +202,7 @@ const resetGame = () => {
   moveHistory.value = []
   gameStatus.value = 'playing'
   showMatchReport.value = false
-  timers.value = { red: props.timeControl.seconds, black: props.timeControl.seconds }
+  timers.value = { white: props.timeControl.seconds, black: props.timeControl.seconds }
   updateFromEngine()
   startTimer()
 }
@@ -211,6 +224,12 @@ const squareBg = (r, c) => {
 
 updateFromEngine()
 startTimer()
+onMounted(() => {
+  if (props.gameMode === 'vsBot' && props.playerSide === 'black' && gameStatus.value === 'playing') {
+    botThinking.value = true
+    setTimeout(runBotMove, 600)
+  }
+})
 onUnmounted(stopTimer)
 defineExpose({ resetGame, moveHistory, gameStatus })
 </script>
@@ -237,14 +256,14 @@ defineExpose({ resetGame, moveHistory, gameStatus })
       border: '2px solid ' + (timers.black < 30 ? '#e74c3c' : 'transparent'),
       transition: 'all 0.3s', display:'flex', justifyContent:'space-between',
     }">
-      <span>⚫ {{ gameMode === 'vsBot' ? 'Bot (Black)' : 'Black' }}</span>
+      <span>⚫ {{ gameMode === 'vsBot' && playerSide === 'white' ? 'Bot (Black)' : 'Black' }}</span>
       <span>{{ formatTime(timers.black) }}</span>
     </div>
 
     <!-- Board container -->
     <div style="position:relative;">
       <div style="position:absolute; left:-20px; top:0; height:100%; display:flex; flex-direction:column; justify-content:space-around; pointer-events:none;">
-        <span v-for="n in 8" :key="n" style="font-size:10px; color:var(--text-secondary); width:16px; text-align:center;">{{ 9-n }}</span>
+        <span v-for="(rIdx, i) in rowIndices" :key="i" style="font-size:10px; color:var(--text-secondary); width:16px; text-align:center;">{{ 8-rIdx }}</span>
       </div>
 
       <div :style="{
@@ -252,54 +271,54 @@ defineExpose({ resetGame, moveHistory, gameStatus })
         width:'min(520px, 90vw)', height:'min(520px, 90vw)',
         borderRadius:'4px', overflow:'hidden', boxShadow:'0 4px 24px rgba(0,0,0,0.5)',
       }">
-        <template v-for="(row, rIdx) in board" :key="rIdx">
+        <template v-for="(rIdx, rdi) in rowIndices" :key="rdi">
           <div
-            v-for="(cell, cIdx) in row" :key="cIdx"
+            v-for="(cIdx, cdi) in colIndices" :key="cdi"
             @click="handleSquareClick(rIdx, cIdx)"
             :style="{
               background: squareBg(rIdx, cIdx),
-              cursor: (cell && cell.color===currentTurn) || isTarget(rIdx, cIdx) ? 'pointer' : 'default',
+              cursor: (board[rIdx]?.[cIdx] && board[rIdx][cIdx].color===currentTurn) || isTarget(rIdx, cIdx) ? 'pointer' : 'default',
               display:'flex', alignItems:'center', justifyContent:'center',
               position:'relative', transition:'background 0.1s',
             }"
           >
-            <div v-if="isTarget(rIdx, cIdx) && !cell" style="width:30%; height:30%; border-radius:50%; background:rgba(0,0,0,0.22); pointer-events:none;"/>
-            <div v-if="cell" :style="{
+            <div v-if="isTarget(rIdx, cIdx) && !board[rIdx]?.[cIdx]" style="width:30%; height:30%; border-radius:50%; background:rgba(0,0,0,0.22); pointer-events:none;"/>
+            <div v-if="board[rIdx]?.[cIdx]" :style="{
               width:'76%', height:'76%', borderRadius:'50%',
-              background: cell.color==='red'
+              background: board[rIdx][cIdx].color==='white'
                 ? 'radial-gradient(circle at 32% 30%, #ffffff, #d8d8d8)'
                 : 'radial-gradient(circle at 32% 30%, #2e2e2e, #0a0a0a)',
-              border: cell.color==='red' ? '2px solid #bbb' : '2px solid #111',
+              border: board[rIdx][cIdx].color==='white' ? '2px solid #bbb' : '2px solid #111',
               boxShadow: isSelected(rIdx, cIdx)
                 ? '0 0 0 3px #fff, 0 0 0 5px #6a9932'
-                : cell.color==='red'
+                : board[rIdx][cIdx].color==='white'
                   ? '0 3px 8px rgba(0,0,0,0.4), inset 0 1px rgba(255,255,255,0.9)'
                   : '0 3px 8px rgba(0,0,0,0.9), inset 0 1px rgba(255,255,255,0.12)',
               display:'flex', alignItems:'center', justifyContent:'center',
               transform: isSelected(rIdx, cIdx) ? 'scale(1.1)' : 'scale(1)',
               transition:'transform 0.1s, box-shadow 0.1s', cursor:'pointer',
             }">
-              <span v-if="cell.type==='king'" :style="{ fontSize:'42%', lineHeight:'1', color: cell.color==='red' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)' }">♛</span>
+              <span v-if="board[rIdx][cIdx].type==='king'" :style="{ fontSize:'42%', lineHeight:'1', color: board[rIdx][cIdx].color==='white' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)' }">♛</span>
             </div>
           </div>
         </template>
       </div>
 
       <div style="display:flex; width:min(520px, 90vw); justify-content:space-around; margin-top:4px;">
-        <span v-for="c in ['a','b','c','d','e','f','g','h']" :key="c" style="font-size:10px; color:var(--text-secondary);">{{ c }}</span>
+        <span v-for="c in (flipped ? ['h','g','f','e','d','c','b','a'] : ['a','b','c','d','e','f','g','h'])" :key="c" style="font-size:10px; color:var(--text-secondary);">{{ c }}</span>
       </div>
     </div>
 
     <!-- White timer -->
     <div v-if="!noTimer" :style="{
       width:'min(520px, 90vw)', padding:'6px 16px', borderRadius:'8px', fontWeight:'700', fontSize:'20px',
-      background: currentTurn==='red' && gameStatus==='playing' ? '#e8e8e8' : 'var(--bg-surface)',
-      color: currentTurn==='red' && gameStatus==='playing' ? '#111' : 'var(--text-secondary)',
-      border: '2px solid ' + (timers.red < 30 ? '#e74c3c' : 'transparent'),
+      background: currentTurn==='white' && gameStatus==='playing' ? '#e8e8e8' : 'var(--bg-surface)',
+      color: currentTurn==='white' && gameStatus==='playing' ? '#111' : 'var(--text-secondary)',
+      border: '2px solid ' + (timers.white < 30 ? '#e74c3c' : 'transparent'),
       transition:'all 0.3s', display:'flex', justifyContent:'space-between',
     }">
-      <span>⬜ {{ gameMode === 'vsBot' ? 'White (You)' : 'White' }}</span>
-      <span>{{ formatTime(timers.red) }}</span>
+      <span>⬜ {{ gameMode === 'vsBot' && playerSide === 'white' ? 'White (You)' : 'White' }}</span>
+      <span>{{ formatTime(timers.white) }}</span>
     </div>
 
     <!-- Buttons -->
@@ -339,9 +358,9 @@ defineExpose({ resetGame, moveHistory, gameStatus })
         <!-- Result header -->
         <div :style="{
           fontSize:'20px', fontWeight:'800', marginBottom:'3px',
-          color: matchResult.winner==='red_wins' ? '#aaa' : '#555',
+          color: matchResult.winner==='white_wins' ? '#aaa' : '#555',
         }">
-          {{ matchResult.winner === 'red_wins' ? '⬜ White wins' : '⚫ Black wins' }}
+          {{ matchResult.winner === 'white_wins' ? '⬜ White wins' : '⚫ Black wins' }}
         </div>
         <div style="font-size:13px; color:var(--text-secondary); margin-bottom:22px;">
           {{ matchResult.reason === 'time' ? 'on time' : 'by blocking all moves' }}

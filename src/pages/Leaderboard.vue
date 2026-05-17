@@ -1,46 +1,49 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
+import { useI18n } from '../i18n.js'
+
+const { t } = useI18n()
 
 const fmjdTab = ref('standard')
 const eloTab  = ref('bullet')
 
-// FMJD Over-the-board rankings
+// FMJD Over-the-board rankings — real FMJD data
 const fmjdRankings = {
   standard: [
-    { rank:1,  name:'Roel Boomstra',      country:'NED', flag:'🇳🇱', rating:2591, title:'GM' },
-    { rank:2,  name:'Alexander Georgiev', country:'RUS', flag:'🇷🇺', rating:2562, title:'GM' },
-    { rank:3,  name:'Mart Nagel',         country:'NED', flag:'🇳🇱', rating:2538, title:'GM' },
-    { rank:4,  name:'Alexei Chizhov',     country:'RUS', flag:'🇷🇺', rating:2519, title:'GM' },
-    { rank:5,  name:'Norbert Cottens',    country:'BEL', flag:'🇧🇪', rating:2497, title:'GM' },
-    { rank:6,  name:'Jan Groenendijk',    country:'NED', flag:'🇳🇱', rating:2476, title:'GM' },
-    { rank:7,  name:'Ivan Kovalev',       country:'BLR', flag:'🇧🇾', rating:2458, title:'GM' },
-    { rank:8,  name:'Daniil Misyans',     country:'RUS', flag:'🇷🇺', rating:2441, title:'IM' },
-    { rank:9,  name:'Kai Goverts',        country:'NED', flag:'🇳🇱', rating:2429, title:'IM' },
-    { rank:10, name:'Timur Begimbekov',   country:'KAZ', flag:'🇰🇿', rating:2417, title:'IM' },
+    { rank:1,  name:'Alexander Shvartsman',   country:'RUS', flag:'🇷🇺', rating:2433, title:'GM' },
+    { rank:2,  name:'Jan Groenendijk',         country:'NED', flag:'🇳🇱', rating:2430, title:'GM' },
+    { rank:3,  name:'Alexander Baliakin',      country:'RUS', flag:'🇷🇺', rating:2425, title:'GM' },
+    { rank:4,  name:'Jitse Slump',             country:'NED', flag:'🇳🇱', rating:2403, title:'GM' },
+    { rank:5,  name:'Guntis Valneris',         country:'LAT', flag:'🇱🇻', rating:2389, title:'GM' },
+    { rank:6,  name:'Martijn van IJzendoorn',  country:'NED', flag:'🇳🇱', rating:2388, title:'GM' },
+    { rank:7,  name:'Pim Meurs',               country:'NED', flag:'🇳🇱', rating:2381, title:'GM' },
+    { rank:8,  name:'Wouter Sipma',            country:'NED', flag:'🇳🇱', rating:2377, title:'GM' },
+    { rank:9,  name:'Arnaud Cordier',          country:'FRA', flag:'🇫🇷', rating:2376, title:'GM' },
+    { rank:10, name:'Artem Ivanov',            country:'RUS', flag:'🇷🇺', rating:2374, title:'GM' },
   ],
   blitz: [
-    { rank:1,  name:'Alexander Georgiev', country:'RUS', flag:'🇷🇺', rating:2540, title:'GM' },
-    { rank:2,  name:'Roel Boomstra',      country:'NED', flag:'🇳🇱', rating:2518, title:'GM' },
-    { rank:3,  name:'Alexei Chizhov',     country:'RUS', flag:'🇷🇺', rating:2494, title:'GM' },
-    { rank:4,  name:'Jan Groenendijk',    country:'NED', flag:'🇳🇱', rating:2471, title:'GM' },
-    { rank:5,  name:'Norbert Cottens',    country:'BEL', flag:'🇧🇪', rating:2452, title:'GM' },
-    { rank:6,  name:'Ivan Kovalev',       country:'BLR', flag:'🇧🇾', rating:2438, title:'GM' },
-    { rank:7,  name:'Mart Nagel',         country:'NED', flag:'🇳🇱', rating:2420, title:'GM' },
-    { rank:8,  name:'Timur Begimbekov',   country:'KAZ', flag:'🇰🇿', rating:2405, title:'IM' },
-    { rank:9,  name:'Daniil Misyans',     country:'RUS', flag:'🇷🇺', rating:2389, title:'IM' },
-    { rank:10, name:'Kai Goverts',        country:'NED', flag:'🇳🇱', rating:2374, title:'IM' },
+    { rank:1,  name:'Alexander Shvartsman',   country:'RUS', flag:'🇷🇺', rating:2475, title:'GM' },
+    { rank:2,  name:"Joel N'cho Atse",         country:'CIV', flag:'🇨🇮', rating:2451, title:'GM' },
+    { rank:3,  name:'Alexander Baliakin',      country:'RUS', flag:'🇷🇺', rating:2439, title:'GM' },
+    { rank:4,  name:'Iurii Anikeev',           country:'RUS', flag:'🇷🇺', rating:2430, title:'GM' },
+    { rank:5,  name:'Jan Groenendijk',         country:'NED', flag:'🇳🇱', rating:2429, title:'GM' },
+    { rank:6,  name:'Guntis Valneris',         country:'LAT', flag:'🇱🇻', rating:2426, title:'GM' },
+    { rank:7,  name:'Mor Seck',                country:'SEN', flag:'🇸🇳', rating:2400, title:'GM' },
+    { rank:8,  name:'Landry Nga',              country:'CMR', flag:'🇨🇲', rating:2397, title:'IM' },
+    { rank:9,  name:'Artem Ivanov',            country:'RUS', flag:'🇷🇺', rating:2394, title:'GM' },
+    { rank:10, name:'Jitse Slump',             country:'NED', flag:'🇳🇱', rating:2391, title:'GM' },
   ],
   rapid: [
-    { rank:1,  name:'Mart Nagel',         country:'NED', flag:'🇳🇱', rating:2557, title:'GM' },
-    { rank:2,  name:'Roel Boomstra',      country:'NED', flag:'🇳🇱', rating:2533, title:'GM' },
-    { rank:3,  name:'Alexander Georgiev', country:'RUS', flag:'🇷🇺', rating:2508, title:'GM' },
-    { rank:4,  name:'Ivan Kovalev',       country:'BLR', flag:'🇧🇾', rating:2486, title:'GM' },
-    { rank:5,  name:'Alexei Chizhov',     country:'RUS', flag:'🇷🇺', rating:2463, title:'GM' },
-    { rank:6,  name:'Norbert Cottens',    country:'BEL', flag:'🇧🇪', rating:2445, title:'GM' },
-    { rank:7,  name:'Timur Begimbekov',   country:'KAZ', flag:'🇰🇿', rating:2428, title:'IM' },
-    { rank:8,  name:'Jan Groenendijk',    country:'NED', flag:'🇳🇱', rating:2411, title:'GM' },
-    { rank:9,  name:'Daniil Misyans',     country:'RUS', flag:'🇷🇺', rating:2394, title:'IM' },
-    { rank:10, name:'Kai Goverts',        country:'NED', flag:'🇳🇱', rating:2378, title:'IM' },
+    { rank:1,  name:'Alexander Shvartsman',   country:'RUS', flag:'🇷🇺', rating:2461, title:'GM' },
+    { rank:2,  name:'Alexander Baliakin',      country:'RUS', flag:'🇷🇺', rating:2447, title:'GM' },
+    { rank:3,  name:'Jan Groenendijk',         country:'NED', flag:'🇳🇱', rating:2435, title:'GM' },
+    { rank:4,  name:'Jitse Slump',             country:'NED', flag:'🇳🇱', rating:2418, title:'GM' },
+    { rank:5,  name:'Iurii Anikeev',           country:'RUS', flag:'🇷🇺', rating:2409, title:'GM' },
+    { rank:6,  name:'Guntis Valneris',         country:'LAT', flag:'🇱🇻', rating:2401, title:'GM' },
+    { rank:7,  name:'Martijn van IJzendoorn',  country:'NED', flag:'🇳🇱', rating:2393, title:'GM' },
+    { rank:8,  name:'Pim Meurs',               country:'NED', flag:'🇳🇱', rating:2386, title:'GM' },
+    { rank:9,  name:'Arnaud Cordier',          country:'FRA', flag:'🇫🇷', rating:2379, title:'GM' },
+    { rank:10, name:'Wouter Sipma',            country:'NED', flag:'🇳🇱', rating:2371, title:'GM' },
   ],
 }
 
@@ -118,35 +121,126 @@ const rankColor = (rank) => rank === 1 ? '#f5b623' : rank === 2 ? '#c0c0c0' : ra
 const titleColor = (t) => t === 'GM' ? '#e53935' : t === 'IM' ? '#f57c00' : t === 'FM' ? '#43a047' : '#1e88e5'
 const medal = (r) => r <= 3 ? ['🥇','🥈','🥉'][r-1] : `#${r}`
 
+/* ── Supabase Storage — photos live here so they work on hosting ── */
+const AVATAR_BASE = 'https://kksfgpjnrppifciagrfd.supabase.co/storage/v1/object/public/avatars'
+
+/* ── Player avatars — key = exact name/username shown in the table ── */
+const playerAvatars = reactive({
+  // FMJD players (Standard + Blitz real data)
+  'Alexander Shvartsman':   `${AVATAR_BASE}/p13.jpg`,
+  'Jan Groenendijk':         `${AVATAR_BASE}/p14.jpg`,
+  'Alexander Baliakin':      `${AVATAR_BASE}/p15.jpg`,
+  'Jitse Slump':             `${AVATAR_BASE}/p16.jpg`,
+  'Guntis Valneris':         `${AVATAR_BASE}/p17.jpg`,
+  'Martijn van IJzendoorn':  `${AVATAR_BASE}/p18.jpg`,
+  'Pim Meurs':               `${AVATAR_BASE}/p19.jpg`,
+  'Wouter Sipma':            `${AVATAR_BASE}/p20.jpg`,
+  'Arnaud Cordier':          `${AVATAR_BASE}/p21.jpg`,
+  'Artem Ivanov':            `${AVATAR_BASE}/p22.jpg`,
+  "Joel N'cho Atse":         `${AVATAR_BASE}/p23.jpg`,
+  'Iurii Anikeev':           `${AVATAR_BASE}/p24.jpg`,
+  'Mor Seck':                `${AVATAR_BASE}/p25.jpg`,
+  'Landry Nga':              `${AVATAR_BASE}/p26.jpg`,
+  // ELO — Bullet (shared with live games where noted)
+  'DraughtsMaster_KZ':  `${AVATAR_BASE}/p01.jpg`,
+  'SpeedKing_RU':       `${AVATAR_BASE}/p27.jpg`,
+  'BlitzBoss_NL':       `${AVATAR_BASE}/p28.jpg`,
+  'FastMover_DE':       `${AVATAR_BASE}/p29.jpg`,
+  'RapidFire_RU':       `${AVATAR_BASE}/p30.jpg`,
+  'BulletAce_FR':       `${AVATAR_BASE}/p31.jpg`,
+  'QuickDraw_PL':       `${AVATAR_BASE}/p32.jpg`,
+  'AlmataSpeed':        `${AVATAR_BASE}/p33.jpg`,
+  'LightningFoot_AR':   `${AVATAR_BASE}/p34.jpg`,
+  'NightOwl_TR':        `${AVATAR_BASE}/p35.jpg`,
+  // ELO — Blitz
+  'BlitzKing_NL':       `${AVATAR_BASE}/p36.jpg`,
+  'CheckerFlash_RU':    `${AVATAR_BASE}/p37.jpg`,
+  'AlmataKing':         `${AVATAR_BASE}/p04.jpg`,
+  'StrikeForce_BE':     `${AVATAR_BASE}/p38.jpg`,
+  'TimePressure_US':    `${AVATAR_BASE}/p39.jpg`,
+  'ThunderMove_DE':     `${AVATAR_BASE}/p40.jpg`,
+  'NurSultan_Pro':      `${AVATAR_BASE}/p07.jpg`,
+  'BoltCheck_FR':       `${AVATAR_BASE}/p41.jpg`,
+  'RushMaster_PL':      `${AVATAR_BASE}/p42.jpg`,
+  'SpeedPiece_IT':      `${AVATAR_BASE}/p43.jpg`,
+  // ELO — Rapid
+  'CheckerKing_RU':     `${AVATAR_BASE}/p05.jpg`,
+  'PositionGod_NL':     `${AVATAR_BASE}/p44.jpg`,
+  'BoardWizard_FR':     `${AVATAR_BASE}/p45.jpg`,
+  'DeepThinker_DE':     `${AVATAR_BASE}/p46.jpg`,
+  'StrategistPro_BE':   `${AVATAR_BASE}/p47.jpg`,
+  'CalculatorPL':       `${AVATAR_BASE}/p48.jpg`,
+  'MasterMind_US':      `${AVATAR_BASE}/p49.jpg`,
+  'SlowBurn_TR':        `${AVATAR_BASE}/p50.jpg`,
+  // ELO — Classic
+  'GrandOld_NL':        `${AVATAR_BASE}/p51.jpg`,
+  'TimelessMaster_RU':  `${AVATAR_BASE}/p52.jpg`,
+  'ClocklessKing_FR':   `${AVATAR_BASE}/p53.jpg`,
+  'PatienceGod_DE':     `${AVATAR_BASE}/p54.jpg`,
+  'ThinkLong_KZ':       `${AVATAR_BASE}/p55.jpg`,
+  'InfinityPlay_PL':    `${AVATAR_BASE}/p56.jpg`,
+  'NoClock_US':         `${AVATAR_BASE}/p57.jpg`,
+  'FullTime_BE':        `${AVATAR_BASE}/p58.jpg`,
+  'ClassicStyle_TR':    `${AVATAR_BASE}/p59.jpg`,
+  'DeepGame_IT':        `${AVATAR_BASE}/p60.jpg`,
+  // ELO — Puzzles
+  'PuzzleMaster_NL':    `${AVATAR_BASE}/p61.jpg`,
+  'TacticKing_RU':      `${AVATAR_BASE}/p62.jpg`,
+  'SolverPro_KZ':       `${AVATAR_BASE}/p63.jpg`,
+  'PuzzleGod_FR':       `${AVATAR_BASE}/p64.jpg`,
+  'TacticStar_DE':      `${AVATAR_BASE}/p65.jpg`,
+  'BrainTease_US':      `${AVATAR_BASE}/p66.jpg`,
+  'MindBender_PL':      `${AVATAR_BASE}/p67.jpg`,
+  'Riddles_BE':         `${AVATAR_BASE}/p68.jpg`,
+  'Enigma_TR':          `${AVATAR_BASE}/p69.jpg`,
+  'Teaser_IT':          `${AVATAR_BASE}/p70.jpg`,
+})
+
+const avaErrLb = (name) => { playerAvatars[name] = null }
+
 const currentUser = ref(JSON.parse(localStorage.getItem('wc_user') || 'null'))
 const userElo = currentUser.value?.elo || 1000
 const totalPlayers = 48291
 const userRank = Math.floor((1 - (userElo - 800) / 1600) * totalPlayers)
 const betterThan = Math.max(0, Math.min(99, Math.round((1 - userRank / totalPlayers) * 100)))
+
+// Kazakhstan-specific rankings
+const kzPlayers = [
+  { rank:1, name:'DraughtsMaster_KZ', rating:2568, title:'GM', region:'Almaty',    flag:'🇰🇿' },
+  { rank:2, name:'AlmataKing',         rating:2548, title:'GM', region:'Almaty',    flag:'🇰🇿' },
+  { rank:3, name:'ThinkLong_KZ',       rating:2539, title:'IM', region:'Shymkent',  flag:'🇰🇿' },
+  { rank:4, name:'NurSultan_Pro',       rating:2452, title:'FM', region:'Astana',    flag:'🇰🇿' },
+  { rank:5, name:'SolverPro_KZ',        rating:2390, title:'FM', region:'Karaganda', flag:'🇰🇿' },
+  { rank:6, name:'AlmataSpeed',         rating:2390, title:'AGM',region:'Almaty',    flag:'🇰🇿' },
+  { rank:7, name:'SteppeKing_KZ',       rating:2187, title:'AGM',region:'Aktobe',    flag:'🇰🇿' },
+  { rank:8, name:'QazaqBoard_KZ',       rating:2143, title:'CM', region:'Pavlodar',  flag:'🇰🇿' },
+  { rank:9, name:'AbaiChecker_KZ',      rating:2098, title:'CM', region:'Semey',     flag:'🇰🇿' },
+  { rank:10,name:'DalaKing_KZ',         rating:2071, title:'CM', region:'Taraz',     flag:'🇰🇿' },
+]
 </script>
 
 <template>
 <div class="lb-page">
   <div class="lb-header">
-    <h1 class="lb-title">Players</h1>
-    <p class="lb-sub">Official FMJD rankings · Online ELO ratings</p>
+    <h1 class="lb-title">{{ t.leaderboard.title }}</h1>
+    <p class="lb-sub">{{ t.leaderboard.sub }}</p>
   </div>
 
   <!-- Your stats (only when logged in) -->
   <div v-if="currentUser" class="your-stats">
     <div class="ys-item">
-      <div class="ys-label">Your Rating</div>
+      <div class="ys-label">{{ t.leaderboard.yourRating }}</div>
       <div class="ys-value gold">{{ userElo }}</div>
     </div>
     <div class="ys-sep"/>
     <div class="ys-item">
-      <div class="ys-label">Better than</div>
+      <div class="ys-label">{{ t.leaderboard.betterThan }}</div>
       <div class="ys-value gold">{{ betterThan }}%</div>
-      <div class="ys-tiny">of all players</div>
+      <div class="ys-tiny">{{ t.leaderboard.ofAll }}</div>
     </div>
     <div class="ys-sep"/>
     <div class="ys-item">
-      <div class="ys-label">World Rank</div>
+      <div class="ys-label">{{ t.leaderboard.worldRank }}</div>
       <div class="ys-value">#{{ userRank.toLocaleString() }}</div>
     </div>
   </div>
@@ -159,23 +253,26 @@ const betterThan = Math.max(0, Math.min(99, Math.round((1 - userRank / totalPlay
       <div class="col-head">
         <div class="col-icon">🏛</div>
         <div>
-          <div class="col-title">FMJD Over-the-board</div>
-          <div class="col-desc">Official FMJD classical ratings</div>
+          <div class="col-title">{{ t.leaderboard.fmjdTitle }}</div>
+          <div class="col-desc">{{ t.leaderboard.fmjdDesc }}</div>
         </div>
       </div>
 
       <div class="tab-row">
-        <button v-for="t in fmjdTabs" :key="t"
-          class="tab-btn" :class="{ active: fmjdTab === t }"
-          @click="fmjdTab = t">
-          {{ t.charAt(0).toUpperCase() + t.slice(1) }}
+        <button v-for="tab in fmjdTabs" :key="tab"
+          class="tab-btn" :class="{ active: fmjdTab === tab }"
+          @click="fmjdTab = tab">
+          {{ t.leaderboard[tab] }}
         </button>
       </div>
 
       <div class="rank-table">
         <div v-for="p in currentFmjd" :key="p.rank" class="rank-row">
           <div class="rank-num" :style="{ color: rankColor(p.rank) }">{{ medal(p.rank) }}</div>
-          <div class="rank-ava purple">{{ p.name[0] }}</div>
+          <div class="rank-ava purple">
+              <img v-if="playerAvatars[p.name]" :src="playerAvatars[p.name]" class="ava-img" :alt="p.name" @error="avaErrLb(p.name)">
+              <span v-else>{{ p.name[0] }}</span>
+            </div>
           <div class="rank-info">
             <div class="rank-name">{{ p.name }}
               <span class="title-badge" :style="{ color: titleColor(p.title), background: titleColor(p.title)+'22' }">{{ p.title }}</span>
@@ -185,7 +282,7 @@ const betterThan = Math.max(0, Math.min(99, Math.round((1 - userRank / totalPlay
           <div class="rank-rating">{{ p.rating }}</div>
         </div>
       </div>
-      <div class="see-more">Show full FMJD rating list →</div>
+      <div class="see-more">{{ t.leaderboard.showFmjd }}</div>
     </div>
 
     <!-- ── RIGHT: ELO Rated ── -->
@@ -193,23 +290,26 @@ const betterThan = Math.max(0, Math.min(99, Math.round((1 - userRank / totalPlay
       <div class="col-head">
         <div class="col-icon">⚡</div>
         <div>
-          <div class="col-title">ELO Rated</div>
-          <div class="col-desc">Online platform ratings by time control</div>
+          <div class="col-title">{{ t.leaderboard.eloTitle }}</div>
+          <div class="col-desc">{{ t.leaderboard.eloDesc }}</div>
         </div>
       </div>
 
       <div class="tab-row">
-        <button v-for="t in eloTabs" :key="t"
-          class="tab-btn" :class="{ active: eloTab === t }"
-          @click="eloTab = t">
-          {{ t.charAt(0).toUpperCase() + t.slice(1) }}
+        <button v-for="tab in eloTabs" :key="tab"
+          class="tab-btn" :class="{ active: eloTab === tab }"
+          @click="eloTab = tab">
+          {{ t.leaderboard[tab] }}
         </button>
       </div>
 
       <div class="rank-table">
         <div v-for="p in currentElo" :key="p.rank" class="rank-row">
           <div class="rank-num" :style="{ color: rankColor(p.rank) }">{{ medal(p.rank) }}</div>
-          <div class="rank-ava gold-ava">{{ p.name[0] }}</div>
+          <div class="rank-ava gold-ava">
+              <img v-if="playerAvatars[p.name]" :src="playerAvatars[p.name]" class="ava-img" :alt="p.name" @error="avaErrLb(p.name)">
+              <span v-else>{{ p.name[0] }}</span>
+            </div>
           <div class="rank-info">
             <div class="rank-name">{{ p.name }}
               <span class="title-badge" :style="{ color: titleColor(p.title), background: titleColor(p.title)+'22' }">{{ p.title }}</span>
@@ -219,13 +319,41 @@ const betterThan = Math.max(0, Math.min(99, Math.round((1 - userRank / totalPlay
           <div class="rank-rating gold">{{ p.rating }}</div>
         </div>
       </div>
-      <div class="see-more">Show full ELO rating list →</div>
+      <div class="see-more">{{ t.leaderboard.showElo }}</div>
     </div>
 
   </div><!-- /two-col -->
 
+  <!-- ── Kazakhstan Rankings ── -->
+  <div class="kz-section">
+    <div class="col-head" style="border-radius:10px 10px 0 0; border-bottom:1px solid var(--border);">
+      <div class="col-icon">🇰🇿</div>
+      <div>
+        <div class="col-title">{{ t.leaderboard.kazakhstanTitle }}</div>
+        <div class="col-desc">{{ t.leaderboard.kazakhstanDesc }}</div>
+      </div>
+    </div>
+    <div class="rank-table">
+      <div v-for="p in kzPlayers" :key="p.rank" class="rank-row">
+        <div class="rank-num" :style="{ color: rankColor(p.rank) }">{{ medal(p.rank) }}</div>
+        <div class="rank-ava kz-ava">
+          <img v-if="playerAvatars[p.name]" :src="playerAvatars[p.name]" class="ava-img" :alt="p.name" @error="avaErrLb(p.name)">
+          <span v-else>{{ p.name[0] }}</span>
+        </div>
+        <div class="rank-info">
+          <div class="rank-name">
+            {{ p.name }}
+            <span class="title-badge" :style="{ color: titleColor(p.title), background: titleColor(p.title)+'22' }">{{ p.title }}</span>
+          </div>
+          <div class="rank-country">{{ p.flag }} {{ p.region }}</div>
+        </div>
+        <div class="rank-rating gold">{{ p.rating }}</div>
+      </div>
+    </div>
+  </div>
+
   <div v-if="!currentUser" class="cta-row">
-    <RouterLink to="/register" class="cta-btn">Create account to see your ranking →</RouterLink>
+    <RouterLink to="/register" class="cta-btn">{{ t.leaderboard.createRank }}</RouterLink>
   </div>
 </div>
 </template>
@@ -321,6 +449,14 @@ const betterThan = Math.max(0, Math.min(99, Math.round((1 - userRank / totalPlay
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: .74rem;
   flex-shrink: 0;
+  overflow: hidden;
+  padding: 0;
+}
+.ava-img {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
 }
 .purple  { background: rgba(100,80,180,0.3); color: #a090e0; border: 1px solid rgba(100,80,180,0.4); }
 .gold-ava{ background: rgba(196,148,48,0.2); color: var(--amber); border: 1px solid rgba(196,148,48,0.35); }
@@ -355,6 +491,16 @@ const betterThan = Math.max(0, Math.min(99, Math.round((1 - userRank / totalPlay
   transition: opacity .15s;
 }
 .see-more:hover { opacity: 0.75; }
+
+/* Kazakhstan section */
+.kz-section {
+  background: var(--ink2);
+  border: 1px solid rgba(252,186,3,0.25);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+.kz-ava { background: rgba(252,186,3,0.12); color: #fcba03; border: 1px solid rgba(252,186,3,0.3); }
 
 .cta-row { margin-top: 28px; text-align: center; }
 .cta-btn {

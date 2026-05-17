@@ -1,25 +1,31 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import { supabase } from './supabase.js'
+import { useI18n } from './i18n.js'
+
+const { t, lang, setLang } = useI18n()
 
 const user = ref(null)
 const mobileOpen = ref(false)
-const lightMode = ref(false)
+const lightMode = ref(localStorage.getItem('wc_theme') === 'light')
 const notifOpen = ref(false)
 
 const toggleTheme = () => {
   lightMode.value = !lightMode.value
   document.documentElement.classList.toggle('light-mode', lightMode.value)
+  localStorage.setItem('wc_theme', lightMode.value ? 'light' : 'dark')
 }
 
-const navItems = [
-  { label: 'Lobby',       path: '/' },
-  { label: 'Tournaments', path: '/tournaments' },
-  { label: 'Puzzles',     path: '/puzzles' },
-  { label: 'Lessons',     path: '/lessons' },
-  { label: 'Players',     path: '/leaderboard' },
-]
+const RULES_PDF_URL = 'https://kksfgpjnrppifciagrfd.supabase.co/storage/v1/object/public/rules/checkers-rules.pdf'
+
+const navItems = computed(() => [
+  { label: t.value.nav.lobby,       path: '/' },
+  { label: t.value.nav.tournaments, path: '/tournaments' },
+  { label: t.value.nav.puzzles,     path: '/puzzles' },
+  { label: t.value.nav.lessons,     path: '/lessons' },
+  { label: t.value.nav.players,     path: '/leaderboard' },
+])
 
 const logout = async () => {
   await supabase.auth.signOut()
@@ -28,6 +34,7 @@ const logout = async () => {
 }
 
 onMounted(async () => {
+  if (lightMode.value) document.documentElement.classList.add('light-mode')
   const saved = localStorage.getItem('wc_user')
   if (saved) user.value = JSON.parse(saved)
   const { data: { session } } = await supabase.auth.getSession()
@@ -63,17 +70,27 @@ onMounted(async () => {
           active-class="nav-link-active"
           exact-active-class="nav-link-active"
         >{{ item.label }}</RouterLink>
+        <a :href="RULES_PDF_URL" target="_blank" rel="noopener" class="nav-link">{{ t.nav.rules }}</a>
       </div>
 
-      <!-- Right: auth -->
+      <!-- Right: auth + language slider -->
       <div class="nav-right">
+        <!-- Language slider -->
+        <div class="lang-sw">
+          <span class="ls-lbl" :class="{ 'ls-on': lang === 'en' }" @click="setLang('en')">EN</span>
+          <button class="ls-track" @click="setLang(lang === 'en' ? 'ru' : 'en')" title="Switch language / Сменить язык">
+            <span class="ls-thumb" :class="{ 'ls-right': lang === 'ru' }"/>
+          </button>
+          <span class="ls-lbl" :class="{ 'ls-on': lang === 'ru' }" @click="setLang('ru')">RU</span>
+        </div>
+        <div class="nav-sep"/>
         <template v-if="user">
-          <button class="nav-icon-btn" @click="notifOpen=!notifOpen" title="Notifications">
+          <button class="nav-icon-btn" @click="notifOpen=!notifOpen" :title="t.nav.notifications">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
             </svg>
           </button>
-          <button class="nav-icon-btn" @click="toggleTheme" :title="lightMode ? 'Dark mode' : 'Light mode'">
+          <button class="nav-icon-btn" @click="toggleTheme" :title="lightMode ? t.nav.darkMode : t.nav.lightMode">
             <svg v-if="lightMode" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
             </svg>
@@ -82,15 +99,15 @@ onMounted(async () => {
             </svg>
           </button>
           <div class="nav-sep"/>
-          <RouterLink to="/play" class="btn-upgrade">Upgrade</RouterLink>
+          <RouterLink to="/play" class="btn-upgrade">{{ t.nav.upgrade }}</RouterLink>
           <RouterLink to="/profile" class="user-chip">
             <span class="user-ava">{{ (user.email||'U')[0].toUpperCase() }}</span>
             <span class="user-name">{{ user.email?.split('@')[0] }}</span>
           </RouterLink>
-          <button @click="logout" class="btn-ghost">Sign Out</button>
+          <button @click="logout" class="btn-ghost">{{ t.nav.signOut }}</button>
         </template>
         <template v-else>
-          <button class="nav-icon-btn" @click="toggleTheme" :title="lightMode ? 'Dark mode' : 'Light mode'">
+          <button class="nav-icon-btn" @click="toggleTheme" :title="lightMode ? t.nav.darkMode : t.nav.lightMode">
             <svg v-if="lightMode" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
             </svg>
@@ -99,26 +116,26 @@ onMounted(async () => {
             </svg>
           </button>
           <div class="nav-sep"/>
-          <RouterLink to="/play" class="btn-play">Play</RouterLink>
-          <RouterLink to="/login" class="btn-ghost">Log In</RouterLink>
-          <RouterLink to="/register" class="btn-register">Sign Up</RouterLink>
+          <RouterLink to="/play" class="btn-play">{{ t.nav.lobby }}</RouterLink>
+          <RouterLink to="/login" class="btn-ghost">{{ t.nav.login }}</RouterLink>
+          <RouterLink to="/register" class="btn-register">{{ t.nav.register }}</RouterLink>
         </template>
       </div>
 
       <!-- Notification dropdown -->
       <div v-if="notifOpen" class="notif-panel" @click.stop>
-        <div class="notif-head">Notifications</div>
+        <div class="notif-head">{{ t.nav.notifications }}</div>
         <div class="notif-item">
           <span class="notif-icon notif-gold">T</span>
-          <span>Daily Bullet Swiss starts in 5 min</span>
+          <span>{{ t.nav.notif1 }}</span>
         </div>
         <div class="notif-item">
           <span class="notif-icon notif-blue">C</span>
-          <span>DraughtsMaster_KZ challenged you</span>
+          <span>{{ t.nav.notif2 }}</span>
         </div>
         <div class="notif-item">
           <span class="notif-icon notif-amber">P</span>
-          <span>New puzzle available</span>
+          <span>{{ t.nav.notif3 }}</span>
         </div>
       </div>
 
@@ -139,10 +156,10 @@ onMounted(async () => {
           @click="mobileOpen=false"
         >{{ item.label }}</RouterLink>
         <hr class="drawer-hr">
-        <RouterLink v-if="!user" to="/login"    class="drawer-link" @click="mobileOpen=false">Log In</RouterLink>
-        <RouterLink v-if="!user" to="/register" class="drawer-link drawer-link-amber" @click="mobileOpen=false">Sign Up Free</RouterLink>
-        <RouterLink v-if="user"  to="/profile"  class="drawer-link" @click="mobileOpen=false">My Profile</RouterLink>
-        <button     v-if="user"  @click="logout; mobileOpen=false" class="drawer-link">Sign Out</button>
+        <RouterLink v-if="!user" to="/login"    class="drawer-link" @click="mobileOpen=false">{{ t.nav.login }}</RouterLink>
+        <RouterLink v-if="!user" to="/register" class="drawer-link drawer-link-amber" @click="mobileOpen=false">{{ t.nav.signupFree }}</RouterLink>
+        <RouterLink v-if="user"  to="/profile"  class="drawer-link" @click="mobileOpen=false">{{ t.nav.myProfile }}</RouterLink>
+        <button     v-if="user"  @click="logout; mobileOpen=false" class="drawer-link">{{ t.nav.signOut }}</button>
       </div>
     </div>
 
@@ -160,6 +177,49 @@ onMounted(async () => {
   color: var(--text0);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
+
+/* ── LANGUAGE SLIDER ── */
+.lang-sw {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.ls-lbl {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text3);
+  letter-spacing: 0.6px;
+  cursor: pointer;
+  transition: color 0.15s;
+  user-select: none;
+  line-height: 1;
+}
+.ls-on { color: var(--text0); }
+.ls-track {
+  width: 30px;
+  height: 16px;
+  background: var(--ink3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.2s;
+  flex-shrink: 0;
+}
+.ls-track:hover { border-color: var(--amber); }
+.ls-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--amber);
+  transition: left 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+.ls-right { left: 16px; }
 
 /* ── NAV ── */
 .topnav {

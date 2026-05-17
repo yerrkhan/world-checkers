@@ -249,6 +249,54 @@ label {
   100% { background-position: -100% 0; }
 }
 
+/* ===== LIGHT MODE ===== */
+
+html.light-mode {
+  --ink:    #f0ece5;
+  --ink1:   #e8e3db;
+  --ink2:   #ddd8cf;
+  --ink3:   #d0cab0;
+  --ink4:   #c2bbae;
+
+  --border:  #ccc5b8;
+  --border2: #b8b0a0;
+
+  --text0:   #18140e;
+  --text1:   #302a22;
+  --text2:   #524a40;
+  --text3:   #847a6e;
+
+  --amber:   #8a6510;
+  --amber-l: #a07820;
+  --amber-d: #6a4e08;
+
+  --green:   #166438;
+  --red:     #8a1c1c;
+  --blue:    #22508a;
+
+  --board-light: #f0d9b5;
+  --board-dark:  #b58863;
+
+  --gold:           var(--amber);
+  --gold-lite:      var(--amber-l);
+  --bg0:            var(--ink);
+  --bg1:            var(--ink1);
+  --bg2:            var(--ink2);
+  --bg3:            var(--ink3);
+  --bg4:            var(--ink4);
+  --border-color:   var(--border);
+  --accent:         var(--amber);
+  --accent-dark:    var(--amber-d);
+  --bg-primary:     var(--ink);
+  --bg-secondary:   var(--ink1);
+  --bg-surface:     var(--ink3);
+  --text-primary:   var(--text0);
+  --text-secondary: var(--text2);
+  --text-tertiary:  var(--text3);
+  --nav-bg:         var(--ink1);
+  --nav-text:       var(--text0);
+}
+
 /* ===== REDUCED MOTION ===== */
 
 @media (prefers-reduced-motion: reduce) {

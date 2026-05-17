@@ -1,59 +1,85 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from '../i18n.js'
 
 const router = useRouter()
+const { t } = useI18n()
 
-const selectedVariant = ref('international')  // default: 10x10 International
-const selectedMode    = ref(null)
-const selectedTC      = ref('rapid')
+const selectedVariant    = ref('international')  // default: 10x10 International
+const selectedMode       = ref(null)
+const selectedTC         = ref('rapid')
+const selectedDifficulty = ref('medium')
+const selectedSide       = ref('white')
 
-const variants = [
+const variants = computed(() => [
   {
     id: 'international',
     icon: '♟',
-    title: 'International Draughts',
-    sub: '10×10 board · FMJD rules',
-    desc: 'The official world standard. 20 pieces per side, flying kings, mandatory maximum captures.',
-    badge: 'DEFAULT',
+    title: t.value.play.intlTitle,
+    sub:   t.value.play.intlSub,
+    desc:  t.value.play.intlDesc,
+    badge: t.value.play.badge,
   },
   {
     id: 'russian',
     icon: '♞',
-    title: 'Russian Checkers',
-    sub: '8×8 board · Russian rules',
-    desc: 'Classic 8×8 checkers with flying kings and backward captures.',
+    title: t.value.play.ruTitle,
+    sub:   t.value.play.ruSub,
+    desc:  t.value.play.ruDesc,
     badge: null,
   },
-]
+])
 
-const modes = [
-  { id:'local',  icon:'🤝', title:'Pass & Play',   desc:'Two players on one device' },
-  { id:'vsBot',  icon:'🤖', title:'Play vs Bot',    desc:'Challenge the AI engine' },
-  { id:'online', icon:'🌍', title:'Play Online',    desc:'Matchmaking worldwide' },
-  { id:'friend', icon:'👥', title:'Play a Friend',  desc:'Invite with a game link' },
-]
+const modes = computed(() => [
+  { id:'local',  icon:'🤝', title: t.value.play.localTitle,  desc: t.value.play.localDesc  },
+  { id:'vsBot',  icon:'🤖', title: t.value.play.botTitle,    desc: t.value.play.botDesc    },
+  { id:'online', icon:'🌍', title: t.value.play.onlineTitle, desc: t.value.play.onlineDesc },
+  { id:'friend', icon:'👥', title: t.value.play.friendTitle, desc: t.value.play.friendDesc },
+])
 
-const timeControls = [
-  { id:'bullet', label:'⚡ Bullet',    sub:'1 min'  },
-  { id:'blitz',  label:'🔥 Blitz',     sub:'3 min'  },
-  { id:'rapid',  label:'⏱ Rapid',     sub:'10 min' },
-  { id:'none',   label:'♾ Unlimited', sub:'No timer' },
-]
+const timeControls = computed(() => [
+  { id:'bullet', label: t.value.play.bullet,    sub: t.value.play.tcMin1   },
+  { id:'blitz',  label: t.value.play.blitz,     sub: t.value.play.tcMin3   },
+  { id:'rapid',  label: t.value.play.rapidLabel,sub: t.value.play.tcMin10  },
+  { id:'none',   label: t.value.play.unlimited, sub: t.value.play.tcNoTimer},
+])
+
+const difficulties = computed(() => [
+  { id: 'easy',   label: t.value.play.easy   },
+  { id: 'medium', label: t.value.play.medium  },
+  { id: 'hard',   label: t.value.play.hard    },
+])
+
+const sides = computed(() => [
+  { id: 'white',  label: t.value.play.playWhite },
+  { id: 'black',  label: t.value.play.playBlack },
+  { id: 'random', label: t.value.play.random    },
+])
 
 const startGame = () => {
   if (!selectedMode.value) return
-  router.push(`/game?mode=${selectedMode.value}&tc=${selectedTC.value}&variant=${selectedVariant.value}`)
+  // In pass&play (local) white always goes first — no side choice
+  let side = selectedMode.value === 'local' ? 'white' : selectedSide.value
+  if (side === 'random') side = Math.random() < 0.5 ? 'white' : 'black'
+  const params = new URLSearchParams({
+    mode: selectedMode.value,
+    tc: selectedTC.value,
+    variant: selectedVariant.value,
+    difficulty: selectedDifficulty.value,
+    side,
+  })
+  router.push(`/game?${params}`)
 }
 </script>
 
 <template>
 <div class="play-page">
-  <h1 class="play-title">Play Checkers</h1>
-  <p class="play-sub">Choose your variant, game mode, and time control.</p>
+  <h1 class="play-title">{{ t.play.title }}</h1>
+  <p class="play-sub">{{ t.play.sub }}</p>
 
   <!-- ── Variant selection ── -->
-  <div class="section-label">GAME VARIANT</div>
+  <div class="section-label">{{ t.play.variantLabel }}</div>
   <div class="variant-grid">
     <div v-for="v in variants" :key="v.id"
       class="variant-card"
@@ -72,7 +98,7 @@ const startGame = () => {
   </div>
 
   <!-- ── Game mode ── -->
-  <div class="section-label">GAME MODE</div>
+  <div class="section-label">{{ t.play.modeLabel }}</div>
   <div class="mode-grid">
     <div v-for="mode in modes" :key="mode.id"
       class="mode-card"
@@ -85,7 +111,7 @@ const startGame = () => {
   </div>
 
   <!-- ── Time control ── -->
-  <div class="section-label">TIME CONTROL</div>
+  <div class="section-label">{{ t.play.tcLabel }}</div>
   <div class="tc-row">
     <button v-for="tc in timeControls" :key="tc.id"
       class="tc-btn"
@@ -95,14 +121,40 @@ const startGame = () => {
     </button>
   </div>
 
+  <!-- ── Bot difficulty + Side chooser (only for vsBot) ── -->
+  <template v-if="selectedMode === 'vsBot'">
+    <div class="section-label">{{ t.play.sideLabel }}</div>
+    <div class="tc-row">
+      <button v-for="s in sides" :key="s.id"
+        class="tc-btn"
+        :class="{ selected: selectedSide === s.id }"
+        @click="selectedSide = s.id">
+        {{ s.label }}
+      </button>
+    </div>
+  </template>
+
+  <!-- ── Bot difficulty (only for vsBot) ── -->
+  <template v-if="selectedMode === 'vsBot'">
+    <div class="section-label">{{ t.play.difficultyLabel }}</div>
+    <div class="tc-row">
+      <button v-for="d in difficulties" :key="d.id"
+        class="tc-btn"
+        :class="{ selected: selectedDifficulty === d.id }"
+        @click="selectedDifficulty = d.id">
+        {{ d.label }}
+      </button>
+    </div>
+  </template>
+
   <!-- ── Start ── -->
   <button class="start-btn" :class="{ disabled: !selectedMode }" @click="startGame">
-    {{ selectedMode ? '▶ Start Game' : 'Select a mode to continue' }}
+    {{ selectedMode ? '▶ ' + t.play.startGame : t.play.selectMode }}
   </button>
 
   <div v-if="selectedMode==='online' || selectedMode==='friend'" class="online-note">
-    <strong>Note:</strong> Online multiplayer requires an account.
-    <RouterLink to="/register">Sign up free →</RouterLink>
+    {{ t.play.onlineNote }}
+    <RouterLink to="/register">{{ t.play.signupFree }}</RouterLink>
   </div>
 </div>
 </template>

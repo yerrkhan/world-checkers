@@ -3,13 +3,17 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import GameBoard    from '../components/GameBoard.vue'
 import GameBoard10  from '../components/GameBoard10.vue'
+import { useI18n } from '../i18n.js'
 
 const route  = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
-const mode    = computed(() => route.query.mode    || 'local')
-const tcType  = computed(() => route.query.tc      || 'rapid')
-const variant = computed(() => route.query.variant || 'international')  // default 10x10
+const mode       = computed(() => route.query.mode       || 'local')
+const tcType     = computed(() => route.query.tc         || 'rapid')
+const variant    = computed(() => route.query.variant    || 'international')  // default 10x10
+const difficulty = computed(() => route.query.difficulty || 'medium')
+const playerSide = computed(() => route.query.side       || 'white')
 
 const isInternational = computed(() => variant.value === 'international')
 
@@ -26,19 +30,29 @@ const showSettings = ref(false)
 const gameDone     = ref(false)
 const boardRef     = ref(null)
 
-const boardThemes = [
-  { id:'classic',  label:'Classic',  light:'#f0d9b5', dark:'#b58863' },
-  { id:'green',    label:'Green',    light:'#eeeed2', dark:'#769656' },
-  { id:'midnight', label:'Midnight', light:'#6e85b5', dark:'#3d4b6e' },
-]
+const boardThemes = computed(() => [
+  { id:'classic',   label: t.value.game.themeClassic,  light:'#f0d9b5', dark:'#b58863' },
+  { id:'green',     label: t.value.game.themeGreen,    light:'#eeeed2', dark:'#769656' },
+  { id:'midnight',  label: t.value.game.themeMidnight, light:'#6e85b5', dark:'#3d4b6e' },
+])
 
 const modeLabel = computed(() => {
-  return { local:'Pass & Play', vsBot:'vs Bot', online:'Online', friend:'vs Friend' }[mode.value] || 'Local'
+  return {
+    local:  t.value.game.modeLocal,
+    vsBot:  t.value.game.modeBot,
+    online: t.value.game.modeOnline,
+    friend: t.value.game.modeFriend,
+  }[mode.value] || t.value.game.modeDefault
 })
 const tcLabel = computed(() => {
-  return { bullet:'⚡ Bullet 1+0', blitz:'🔥 Blitz 3+0', rapid:'⏱ Rapid 10+0', none:'♾ No timer' }[tcType.value] || '⏱ Rapid'
+  return {
+    bullet: t.value.game.tcBullet,
+    blitz:  t.value.game.tcBlitz,
+    rapid:  t.value.game.tcRapid,
+    none:   t.value.game.tcNone,
+  }[tcType.value] || t.value.game.tcRapid
 })
-const variantLabel = computed(() => isInternational.value ? '♟ International 10×10' : '♞ Russian 8×8')
+const variantLabel = computed(() => isInternational.value ? t.value.game.variantIntl : t.value.game.variantRu)
 
 const onGameOver = ({ winner }) => { gameDone.value = true }
 const setBoardTheme = (id) => { boardTheme.value = id; localStorage.setItem('boardTheme', id) }
@@ -59,15 +73,15 @@ const setBoardTheme = (id) => { boardTheme.value = id; localStorage.setItem('boa
 
     <!-- Board settings -->
     <div v-if="showSettings" class="settings-panel">
-      <div class="settings-label">BOARD THEME</div>
+      <div class="settings-label">{{ t.game.boardTheme }}</div>
       <div class="theme-row">
-        <button v-for="t in boardThemes" :key="t.id"
-          @click="setBoardTheme(t.id)"
+        <button v-for="theme in boardThemes" :key="theme.id"
+          @click="setBoardTheme(theme.id)"
           class="theme-btn"
-          :class="{ active: boardTheme===t.id }">
-          <span :style="{ width:'14px', height:'14px', borderRadius:'3px', background:t.dark, display:'inline-block' }"/>
-          <span :style="{ width:'14px', height:'14px', borderRadius:'3px', background:t.light, display:'inline-block' }"/>
-          {{ t.label }}
+          :class="{ active: boardTheme===theme.id }">
+          <span :style="{ width:'14px', height:'14px', borderRadius:'3px', background:theme.dark, display:'inline-block' }"/>
+          <span :style="{ width:'14px', height:'14px', borderRadius:'3px', background:theme.light, display:'inline-block' }"/>
+          {{ theme.label }}
         </button>
       </div>
     </div>
@@ -79,6 +93,8 @@ const setBoardTheme = (id) => { boardTheme.value = id; localStorage.setItem('boa
       :boardTheme="boardTheme"
       :gameMode="mode"
       :timeControl="timeControl"
+      :botDifficulty="difficulty"
+      :playerSide="playerSide"
       @gameOver="onGameOver"
     />
 
@@ -89,6 +105,8 @@ const setBoardTheme = (id) => { boardTheme.value = id; localStorage.setItem('boa
       :boardTheme="boardTheme"
       :gameMode="mode"
       :timeControl="timeControl"
+      :botDifficulty="difficulty"
+      :playerSide="playerSide"
       @gameOver="onGameOver"
     />
   </div>
@@ -96,41 +114,41 @@ const setBoardTheme = (id) => { boardTheme.value = id; localStorage.setItem('boa
   <!-- Sidebar -->
   <aside class="game-sidebar">
     <div class="side-card">
-      <div class="side-label">GAME</div>
-      <RouterLink to="/play" class="side-btn side-btn-outline">← New Game</RouterLink>
-      <button @click="boardRef?.resetGame()" class="side-btn side-btn-outline">↺ Restart</button>
+      <div class="side-label">{{ t.game.sideGame }}</div>
+      <RouterLink to="/play" class="side-btn side-btn-outline">{{ t.game.newGame }}</RouterLink>
+      <button @click="boardRef?.resetGame()" class="side-btn side-btn-outline">{{ t.game.restart }}</button>
     </div>
 
     <div class="side-card">
-      <div class="side-label">VARIANT</div>
+      <div class="side-label">{{ t.game.sideVariant }}</div>
       <div style="font-size:.82rem; color:#ddd; font-weight:700; margin-bottom:4px;">{{ variantLabel }}</div>
       <div style="font-size:.75rem; color:#555; line-height:1.5;">
         <template v-if="isInternational">
-          10×10 board · FMJD rules<br>Flying kings · Max capture<br>Backward captures allowed
+          {{ t.game.intlDesc }}<br>{{ t.game.intlDesc2 }}<br>{{ t.game.intlDesc3 }}
         </template>
         <template v-else>
-          8×8 board · Russian rules<br>Flying kings · Multi-jump
+          {{ t.game.ruDesc }}<br>{{ t.game.ruDesc2 }}
         </template>
       </div>
     </div>
 
     <div class="side-card">
-      <div class="side-label">RULES</div>
+      <div class="side-label">{{ t.game.sideRules }}</div>
       <ul class="rules-list">
-        <li>Captures are mandatory</li>
-        <li v-if="isInternational">Choose the maximum capture sequence</li>
-        <li>Kings move any distance diagonally</li>
-        <li>Win by capturing all pieces</li>
-        <li>Or block all opponent moves</li>
+        <li>{{ t.game.rule1 }}</li>
+        <li v-if="isInternational">{{ t.game.rule2 }}</li>
+        <li>{{ t.game.rule3 }}</li>
+        <li>{{ t.game.rule4 }}</li>
+        <li>{{ t.game.rule5 }}</li>
       </ul>
     </div>
 
     <div class="side-card">
-      <div class="side-label">SWITCH VARIANT</div>
+      <div class="side-label">{{ t.game.sideSwitchVariant }}</div>
       <RouterLink
         :to="`/game?mode=${mode}&tc=${tcType}&variant=${isInternational ? 'russian' : 'international'}`"
         class="side-btn side-btn-gold">
-        {{ isInternational ? '♞ Play 8×8 Russian' : '♟ Play 10×10 International' }}
+        {{ isInternational ? t.game.playRussian : t.game.playIntl }}
       </RouterLink>
     </div>
   </aside>

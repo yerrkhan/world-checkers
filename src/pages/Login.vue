@@ -2,8 +2,10 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { signIn } from '../supabase'
+import { useI18n } from '../i18n.js'
 
 const router = useRouter()
+const { t } = useI18n()
 const email    = ref('')
 const password = ref('')
 const error    = ref('')
@@ -12,7 +14,7 @@ const loading  = ref(false)
 const login = async () => {
   error.value = ''
   if (!email.value || !password.value) {
-    error.value = 'Please fill in all fields.'
+    error.value = t.value.login.errFields
     return
   }
   loading.value = true
@@ -21,7 +23,7 @@ const login = async () => {
     localStorage.setItem('wc_user', JSON.stringify({ id: user.id, email: user.email }))
     router.push('/profile')
   } catch {
-    error.value = 'Invalid email or password. Please try again.'
+    error.value = t.value.login.errCreds
   } finally {
     loading.value = false
   }
@@ -37,29 +39,29 @@ const login = async () => {
       <span class="auth-brand">WORLD CHECKERS</span>
     </div>
 
-    <h1 class="auth-title">Welcome back</h1>
-    <p class="auth-sub">Sign in to your account</p>
+    <h1 class="auth-title">{{ t.login.welcome }}</h1>
+    <p class="auth-sub">{{ t.login.sub }}</p>
 
     <div v-if="error" class="msg-error">{{ error }}</div>
 
     <div class="form-fields">
       <div class="field">
-        <label>Email address</label>
+        <label>{{ t.login.email }}</label>
         <input v-model="email" type="email" placeholder="you@example.com" @keyup.enter="login" />
       </div>
       <div class="field">
-        <label>Password</label>
+        <label>{{ t.login.password }}</label>
         <input v-model="password" type="password" placeholder="••••••••" @keyup.enter="login" />
       </div>
 
       <button @click="login" class="btn-submit" :disabled="loading">
-        {{ loading ? 'Signing in…' : 'Sign In' }}
+        {{ loading ? t.login.signingIn : t.login.signIn }}
       </button>
     </div>
 
     <p class="auth-switch">
-      Don't have an account?
-      <RouterLink to="/register">Sign up free →</RouterLink>
+      {{ t.login.noAccount }}
+      <RouterLink to="/register">{{ t.login.register }}</RouterLink>
     </p>
   </div>
 </div>

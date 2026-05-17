@@ -7,9 +7,11 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Draughts10 } from '../game/draughts10.js'
 
 const props = defineProps({
-  boardTheme: { type: String, default: 'classic' },
-  gameMode:   { type: String, default: 'local' },   // 'local' | 'vsBot'
-  timeControl:{ type: Object, default: () => ({ type: 'rapid', seconds: 600 }) },
+  boardTheme:     { type: String, default: 'classic' },
+  gameMode:       { type: String, default: 'local' },   // 'local' | 'vsBot'
+  timeControl:    { type: Object, default: () => ({ type: 'rapid', seconds: 600 }) },
+  botDifficulty:  { type: String, default: 'medium' },  // 'easy' | 'medium' | 'hard'
+  playerSide:     { type: String, default: 'white' },   // 'white' | 'black'
 })
 const emit = defineEmits(['gameOver', 'moveMade'])
 
@@ -103,10 +105,20 @@ const endGame = (w, reason) => {
   setTimeout(() => { report.value = true }, 600)
 }
 
+// ─── Bot difficulty depth ─────────────────────────────────────────────────
+const botDepth = computed(() => {
+  if (props.botDifficulty === 'easy') return 1
+  if (props.botDifficulty === 'hard') return 5
+  return 3  // medium
+})
+
+// humanTurn: 'light' if player chose white, 'dark' if player chose black
+const humanTurn = computed(() => props.playerSide === 'black' ? 'dark' : 'light')
+
 // ─── Square click ─────────────────────────────────────────────────────────
 const clickSquare = (r, c) => {
   if (status.value !== 'playing') return
-  if (props.gameMode === 'vsBot' && syncedTurn.value === 'dark') return
+  if (props.gameMode === 'vsBot' && syncedTurn.value !== humanTurn.value) return
   if (botBusy.value) return
 
   const mySign = syncedTurn.value === 'dark' ? 1 : -1
@@ -143,15 +155,15 @@ const executeMove = (move) => {
   sel.value = null; targets.value = []
   refresh()
   emit('moveMade', history.value)
-  // In vsBot mode, white=human plays first, bot plays dark
-  if (props.gameMode === 'vsBot' && syncedTurn.value === 'dark' && status.value === 'playing') {
+  // In vsBot mode trigger bot when it's not the human's turn
+  if (props.gameMode === 'vsBot' && syncedTurn.value !== humanTurn.value && status.value === 'playing') {
     botBusy.value = true
     setTimeout(runBot, 400 + Math.random() * 600)
   }
 }
 
 const runBot = () => {
-  const best = engine.value.bestMove(2)
+  const best = engine.value.bestMove(botDepth.value)
   if (best) {
     const dest = best.path[best.path.length - 1]
     lastMove.value = { from: best.from, to: dest }
@@ -186,18 +198,30 @@ const resetGame = () => {
   clocks.value = { dark: props.timeControl.seconds, light: props.timeControl.seconds }
   refresh()
   startClock()
+  if (props.gameMode === 'vsBot' && props.playerSide === 'black' && status.value === 'playing') {
+    botBusy.value = true
+    setTimeout(runBot, 600)
+  }
 }
 
-onMounted(() => { refresh(); startClock() })
+onMounted(() => {
+  refresh()
+  startClock()
+  // If player chose black and mode is vsBot, bot plays first (white/light goes first)
+  if (props.gameMode === 'vsBot' && props.playerSide === 'black' && status.value === 'playing') {
+    botBusy.value = true
+    setTimeout(runBot, 600)
+  }
+})
 onUnmounted(stopClock)
 defineExpose({ resetGame, history, status })
 
 // ─── Column/Row labels ────────────────────────────────────────────────────
 const colLabels = ['a','b','c','d','e','f','g','h','i','j']
 
-// ─── Board orientation (flip so active player is always at bottom) ────────
-// When it's dark's turn, flip the board so dark sees their pieces at bottom
-const flipped      = computed(() => syncedTurn.value === 'dark')
+// ─── Board orientation (static — white always at bottom) ─────────────────
+// flipped=false means white (light) pieces are at the bottom rows (rows 6-9)
+const flipped      = computed(() => props.playerSide === 'black')
 const rowIndices   = computed(() => flipped.value ? [9,8,7,6,5,4,3,2,1,0] : [0,1,2,3,4,5,6,7,8,9])
 const colIndices   = computed(() => flipped.value ? [9,8,7,6,5,4,3,2,1,0] : [0,1,2,3,4,5,6,7,8,9])
 const rowLabels    = computed(() => flipped.value ? [1,2,3,4,5,6,7,8,9,10] : [10,9,8,7,6,5,4,3,2,1])

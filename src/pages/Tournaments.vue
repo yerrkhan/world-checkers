@@ -1,8 +1,10 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from '../i18n.js'
 
 const router = useRouter()
+const { t } = useI18n()
 
 /* ── Current time ─────────────────────────────── */
 const now = ref(new Date())
@@ -150,29 +152,29 @@ const today = computed(() => {
   <div class="t-header">
     <h1 class="t-heading">
       <span class="t-trophy">🏆</span>
-      {{ allT.length }} Tournaments today
+      {{ allT.length }} {{ t.tournaments.heading }}
     </h1>
-    <p class="t-sub">{{ totalPlaying.toLocaleString() }} players · {{ today }}</p>
+    <p class="t-sub">{{ totalPlaying.toLocaleString() }} {{ t.tournaments.players }} · {{ today }}</p>
   </div>
 
   <!-- ── Filters ── -->
   <div class="filters">
     <select v-model="filterType" class="f-select">
-      <option>All types</option>
-      <option>Bullet</option>
-      <option>Blitz</option>
-      <option>Rapid</option>
+      <option value="All types">{{ t.tournaments.allTypes }}</option>
+      <option value="Bullet">{{ t.leaderboard.bullet }}</option>
+      <option value="Blitz">{{ t.leaderboard.blitz }}</option>
+      <option value="Rapid">{{ t.leaderboard.rapid }}</option>
     </select>
     <select v-model="filterRegion" class="f-select">
-      <option>Worldwide</option>
-      <option>Kazakhstan</option>
-      <option>Russia</option>
-      <option>Europe</option>
+      <option value="Worldwide">{{ t.tournaments.worldwide }}</option>
+      <option value="Kazakhstan">{{ t.tournaments.kazakhstan }}</option>
+      <option value="Russia">{{ t.tournaments.russia }}</option>
+      <option value="Europe">{{ t.tournaments.europe }}</option>
     </select>
     <select v-model="filterControl" class="f-select">
-      <option>All controls</option>
-      <option>Swiss</option>
-      <option>Arena</option>
+      <option value="All controls">{{ t.tournaments.allControls }}</option>
+      <option value="Swiss">{{ t.tournaments.swiss }}</option>
+      <option value="Arena">{{ t.tournaments.arena }}</option>
     </select>
     <div class="f-date">
       📅 {{ now.toLocaleDateString('en',{ month:'2-digit', day:'2-digit', year:'numeric' }) }}
@@ -244,12 +246,12 @@ const today = computed(() => {
     <div v-if="tooltip" class="tt"
       :style="{ left: tooltipPos.x + 'px', top: tooltipPos.y + 'px' }">
       <div class="tt-name">{{ tooltip.name }}</div>
-      <div class="tt-row"><span class="tt-label">Type</span><span :style="{ color: typeColor[tooltip.type] }">{{ tooltip.type }}</span></div>
-      <div class="tt-row"><span class="tt-label">Format</span>{{ tooltip.control }}</div>
-      <div class="tt-row"><span class="tt-label">Time</span>{{ fmtTime(tooltip.start) }} – {{ fmtTime(tooltip.start + tooltip.dur/60) }}</div>
-      <div class="tt-row"><span class="tt-label">Players</span>{{ tooltip.players }} / {{ tooltip.max }}</div>
-      <div class="tt-row"><span class="tt-label">Variant</span>{{ tooltip.variant }}</div>
-      <button class="tt-join">Join Tournament →</button>
+      <div class="tt-row"><span class="tt-label">{{ t.tournaments.ttType }}</span><span :style="{ color: typeColor[tooltip.type] }">{{ tooltip.type }}</span></div>
+      <div class="tt-row"><span class="tt-label">{{ t.tournaments.ttFormat }}</span>{{ tooltip.control }}</div>
+      <div class="tt-row"><span class="tt-label">{{ t.tournaments.ttTime }}</span>{{ fmtTime(tooltip.start) }} – {{ fmtTime(tooltip.start + tooltip.dur/60) }}</div>
+      <div class="tt-row"><span class="tt-label">{{ t.tournaments.ttPlayers }}</span>{{ tooltip.players }} / {{ tooltip.max }}</div>
+      <div class="tt-row"><span class="tt-label">{{ t.tournaments.ttVariant }}</span>{{ tooltip.variant }}</div>
+      <button class="tt-join">{{ t.tournaments.joinTournament }}</button>
     </div>
   </Teleport>
 
