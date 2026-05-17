@@ -1,25 +1,27 @@
 # World Checkers Design Direction
 
 ## Scene
-Players use the product during focused evening sessions on laptops and tablets, often switching between active games, tournament listings, and analysis. The default theme should be dark to reduce glare around the board while keeping data legible.
+Players use the product during focused evening sessions on laptops and tablets, often switching between active games, tournament listings, puzzles, rankings, and analysis. The product should feel like an arena: immediate, dense, black, tournament-forward, and built around boards in motion.
 
 ## Color Strategy
-Restrained product palette with tinted neutrals and limited accents.
+FIDE Online Arena is the primary reference; chess.com is secondary for board clarity and familiar game affordances.
 
-- Base: deep green-black and warm slate neutrals.
-- Primary accent: clay gold for primary actions, active navigation, selected controls, and important ratings.
-- Secondary semantic accents: olive success, muted red danger, and steel blue information.
-- Light mode remains available, but should feel like parchment and ink rather than pure white.
+- Base: near-black canvas with subtle green undertones, not panel-heavy.
+- Primary accents: arena yellow and electric lime for actions, active tabs, live indicators, and important calls to action.
+- Tournament accent: warm brown bars on black timeline grids, with dark text and speed-line details.
+- Secondary semantic accents: red for live/current time markers, muted blue only for information states.
+- Light mode remains available, but the product identity is dark-first.
 
 ## Typography
-Use a system sans stack. Keep UI text compact, legible, and consistent. Body copy should stay below 75 characters where possible. Numeric data uses tabular figures.
+Use a compact system sans for controls and lists, with condensed uppercase display type for major page titles and arena-scale numbers. Keep letter spacing neutral. Numeric data uses tabular figures.
 
 ## Components
-- Navigation: fixed, dense, predictable, with a clear active state.
-- Cards and panels: 8px radius or less, subtle borders, no nested-card feel.
-- Buttons: one primary clay action, quiet secondary controls, consistent focus states.
-- Tables and lists: row hover, clear ranks, avatars, ratings aligned with tabular numerals.
-- Boards: stable square dimensions, visible coordinates, tactile pieces, clear selected and target states.
+- Navigation: fixed, dense, black, left-aligned, and white/yellow like an arena header.
+- Cards and panels: avoid decorative cards on content pages; use flat lists, full-width bands, and sharp tool surfaces.
+- Buttons: rectangular yellow/lime primary actions, quiet black secondary controls, consistent focus states.
+- Tables and lists: flat ranking rows with avatars, ranks, ratings, and tabular numerals.
+- Boards: stable square dimensions, direct visual priority, clear selected and target states.
+- Tournament timelines: black grid background, brown event bars, red current-time marker, compact tournament metadata.
 
 ## Motion
 Short 150-220ms transitions for hover, selection, and panel reveal. Avoid page-load choreography and decorative motion.

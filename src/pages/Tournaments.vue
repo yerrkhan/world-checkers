@@ -118,8 +118,8 @@ const getTStatus = (t) => {
 /* ── Colors ───────────────────────────────────── */
 const typeColor = { Bullet:'#e85d04', Blitz:'#f5b623', Rapid:'#4cc9f0' }
 const getBg = (t) => {
-  const c = typeColor[t.type] || '#888'
-  return `linear-gradient(135deg, ${c}22, ${c}11)`
+  const tone = getTStatus(t) === 'live' ? 'oklch(62% 0.084 64)' : 'oklch(48% 0.076 62)'
+  return `linear-gradient(90deg, ${tone}, ${tone})`
 }
 const getBorder = (t) => typeColor[t.type] || '#444'
 

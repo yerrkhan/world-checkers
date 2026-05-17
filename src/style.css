@@ -1031,3 +1031,608 @@ html body #app .premium-banner {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Arena chess-site visual pass */
+:root {
+  --paper: oklch(96% 0.01 92);
+  --ink: oklch(4.5% 0.008 132);
+  --ink1: oklch(5.8% 0.01 132);
+  --ink2: oklch(7.5% 0.012 132);
+  --ink3: oklch(10.5% 0.014 132);
+  --ink4: oklch(15% 0.016 132);
+  --panel: oklch(6.8% 0.012 132);
+  --panel-soft: oklch(9.4% 0.014 132);
+  --text0: oklch(96% 0.01 92);
+  --text1: oklch(86% 0.012 92);
+  --text2: oklch(68% 0.015 92);
+  --text3: oklch(50% 0.014 92);
+  --border: oklch(21% 0.016 118);
+  --border2: oklch(31% 0.018 96);
+  --amber: oklch(78% 0.16 84);
+  --amber-l: oklch(88% 0.18 96);
+  --green: oklch(86% 0.27 125);
+  --red: oklch(63% 0.19 28);
+  --btn-ink: oklch(8% 0.018 96);
+  --arena-brown: oklch(48% 0.076 62);
+  --arena-brown-light: oklch(62% 0.084 64);
+  --arena-grid: oklch(18% 0.01 132);
+  --arena-display: "Arial Narrow", "Roboto Condensed", "Segoe UI Condensed", "Aptos Condensed", Impact, sans-serif;
+}
+
+html,
+body,
+#app {
+  background: var(--ink);
+}
+
+body {
+  color: var(--text0);
+  font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  background:
+    linear-gradient(180deg, oklch(5.4% 0.009 132) 0%, var(--ink) 460px),
+    var(--ink);
+}
+
+html body #app * {
+  letter-spacing: 0 !important;
+}
+
+html body #app .top-nav {
+  height: 46px;
+  background: var(--ink);
+  border-bottom: 1px solid oklch(15% 0.01 132);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+html body #app .nav-brand,
+html body #app .nav-link {
+  color: var(--paper);
+  font-size: 0.9rem;
+}
+
+html body #app .nav-link.router-link-active,
+html body #app .nav-link:hover {
+  color: var(--amber-l);
+  background: transparent;
+}
+
+html body #app button,
+html body #app select,
+html body #app input {
+  border-radius: 2px;
+}
+
+html body #app .btn-primary,
+html body #app .btn-hero-primary,
+html body #app .price-btn-em,
+html body #app .start-btn {
+  background: var(--green);
+  color: var(--btn-ink);
+  border-color: var(--green);
+  box-shadow: none;
+  text-transform: uppercase;
+}
+
+html body #app .btn-hero-ghost,
+html body #app .price-btn,
+html body #app .filter-select,
+html body #app .tab-btn {
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--border2);
+}
+
+html body #app .home,
+html body #app .page,
+html body #app .puzzles-page,
+html body #app .lb-page,
+html body #app .tourn-page,
+html body #app .premium-page {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+html body #app .hero {
+  min-height: 610px;
+  padding: 64px 40px 34px;
+  border-bottom: 1px solid oklch(17% 0.01 132);
+  background: var(--ink);
+  position: relative;
+  overflow: hidden;
+}
+
+html body #app .hero::after {
+  content: "";
+  position: absolute;
+  top: 86px;
+  left: 38px;
+  width: 118px;
+  height: 118px;
+  background:
+    linear-gradient(45deg, var(--paper) 25%, transparent 25% 75%, var(--paper) 75%),
+    linear-gradient(45deg, var(--paper) 25%, transparent 25% 75%, var(--paper) 75%);
+  background-position: 0 0, 12px 12px;
+  background-size: 24px 24px;
+  clip-path: polygon(50% 0, 94% 25%, 94% 75%, 50% 100%, 6% 75%, 6% 25%);
+  opacity: 0.95;
+}
+
+html body #app .hero-inner {
+  max-width: 1640px;
+  display: grid;
+  grid-template-columns: minmax(300px, 420px) 1fr;
+  gap: 52px;
+  padding-left: 136px;
+}
+
+html body #app .eyebrow,
+html body #app .sec-label,
+html body #app .t-type-lbl,
+html body #app .upgrade-eyebrow {
+  color: var(--amber);
+  text-transform: uppercase;
+}
+
+html body #app .hero-title,
+html body #app .lb-title,
+html body #app .page-title,
+html body #app .upgrade-title {
+  font-family: var(--arena-display);
+  font-weight: 900;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+html body #app .hero-title {
+  max-width: 430px;
+  font-size: 4.4rem;
+  color: var(--paper);
+}
+
+html body #app .hero-em {
+  color: var(--paper);
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  text-transform: none;
+}
+
+html body #app .hero-sub {
+  max-width: 490px;
+  color: var(--paper);
+  font-size: 1.12rem;
+  line-height: 1.45;
+}
+
+html body #app .stat-row {
+  align-self: end;
+  max-width: 880px;
+  width: 100%;
+  margin-top: 0;
+  justify-self: end;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0 0 22px;
+  gap: 28px;
+}
+
+html body #app .stat {
+  align-items: flex-start;
+}
+
+html body #app .stat-n {
+  color: var(--paper);
+  font-family: var(--arena-display);
+  font-size: 4.7rem;
+  font-weight: 900;
+}
+
+html body #app .stat-l {
+  color: var(--paper);
+  font-size: 1rem;
+  text-transform: lowercase;
+  text-align: left;
+}
+
+html body #app .stat-sep {
+  background: var(--green);
+  opacity: 0.7;
+}
+
+html body #app .section,
+html body #app .section-alt,
+html body #app .section-upgrade {
+  background: var(--ink);
+  border-color: oklch(17% 0.01 132);
+}
+
+html body #app .games-grid {
+  grid-template-columns: repeat(4, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+html body #app .game-card,
+html body #app .price-card,
+html body #app .col-card,
+html body #app .puzzle-card {
+  background: var(--ink);
+  border: 1px solid oklch(25% 0.014 96);
+  box-shadow: none;
+}
+
+html body #app .game-card {
+  border-radius: 2px;
+  padding: 12px;
+}
+
+html body #app .mini-board-wrap,
+html body #app .mini-board {
+  border-radius: 0;
+}
+
+html body #app .watch-cta,
+html body #app .sec-link {
+  color: var(--amber);
+}
+
+html body #app .tourn-page {
+  max-width: none;
+  padding: 42px 0 90px;
+}
+
+html body #app .t-header,
+html body #app .filters {
+  width: min(1180px, calc(100% - 48px));
+  margin-inline: auto;
+}
+
+html body #app .t-heading {
+  color: var(--paper);
+  font-family: var(--arena-display);
+  font-size: 2.15rem;
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+html body #app .t-sub {
+  color: var(--paper);
+  font-size: 1.45rem;
+}
+
+html body #app .filters {
+  margin-top: 52px;
+  margin-bottom: 54px;
+}
+
+html body #app .tl-outer {
+  width: 100%;
+  border-top: 1px solid oklch(15% 0.01 132);
+  border-bottom: 1px solid oklch(15% 0.01 132);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 39px, color-mix(in oklch, var(--arena-grid), transparent 28%) 40px 41px),
+    var(--ink);
+}
+
+html body #app .tl-inner {
+  min-height: 770px;
+}
+
+html body #app .hour-line {
+  border-color: color-mix(in oklch, var(--arena-grid), transparent 14%);
+}
+
+html body #app .hour-label {
+  color: oklch(41% 0.012 92);
+  top: 6px;
+}
+
+html body #app .now-line {
+  background: var(--red);
+  box-shadow: none;
+}
+
+html body #app .now-label {
+  color: var(--red);
+}
+
+html body #app .tl-bar {
+  min-height: 66px;
+  overflow: visible;
+  background: var(--arena-brown) !important;
+  border: 0;
+  border-radius: 0;
+  color: var(--btn-ink);
+  box-shadow: none;
+  clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 50%, calc(100% - 28px) 100%, 0 100%);
+}
+
+html body #app .status-done,
+html body #app .status-live,
+html body #app .status-upcoming {
+  opacity: 0.92 !important;
+}
+
+html body #app .bar-cap {
+  display: none;
+}
+
+html body #app .tl-bar::before {
+  content: "";
+  position: absolute;
+  left: -34px;
+  top: 22px;
+  width: 28px;
+  height: 18px;
+  background: repeating-linear-gradient(0deg, transparent 0 5px, var(--arena-brown-light) 6px 7px);
+}
+
+html body #app .tl-bar:hover {
+  background: var(--arena-brown-light);
+  transform: translateY(-1px);
+}
+
+html body #app .bar-title,
+html body #app .bar-meta,
+html body #app .bar-type,
+html body #app .bar-foot {
+  color: var(--btn-ink);
+}
+
+html body #app .lb-page {
+  max-width: 1240px;
+  padding: 60px 24px 86px;
+}
+
+html body #app .lb-title {
+  color: var(--paper);
+  font-size: 4.6rem;
+  margin-bottom: 56px;
+}
+
+html body #app .lb-sub {
+  display: none;
+}
+
+html body #app .two-col {
+  gap: 72px;
+}
+
+html body #app .col-card {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
+html body #app .col-title {
+  color: var(--paper);
+  font-size: 1.4rem;
+}
+
+html body #app .tab-btn.active,
+html body #app .lb-tab.active {
+  background: var(--paper);
+  color: var(--btn-ink);
+}
+
+html body #app .rank-row {
+  border-bottom: 1px solid oklch(17% 0.01 132);
+  border-radius: 0;
+  background: transparent;
+  padding: 12px 4px;
+}
+
+html body #app .rank-row:hover {
+  background: oklch(8.5% 0.012 132);
+}
+
+html body #app .rank-ava {
+  width: 58px;
+  height: 58px;
+}
+
+html body #app .rank-name,
+html body #app .rank-rating {
+  color: var(--paper);
+}
+
+html body #app .delta-up {
+  color: var(--green);
+}
+
+html body #app .delta-down {
+  color: var(--red);
+}
+
+html body #app .puzzles-page {
+  max-width: none;
+  padding: 54px 24px 90px;
+}
+
+html body #app .page-head {
+  max-width: 1180px;
+  margin-inline: auto;
+  margin-bottom: 42px;
+}
+
+html body #app .page-title {
+  color: var(--paper);
+  font-size: 3.25rem;
+  font-style: italic;
+}
+
+html body #app .page-sub {
+  max-width: 880px;
+  color: var(--paper);
+  font-size: 1.45rem;
+  line-height: 1.35;
+}
+
+html body #app .puzzle-grid {
+  max-width: 1680px;
+  margin-inline: auto;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: 34px 20px;
+}
+
+html body #app .puzzle-card {
+  position: relative;
+  min-height: 420px;
+  padding: 282px 2px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+html body #app .puzzle-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 255px;
+  border: 1px solid oklch(27% 0.012 96);
+  background:
+    linear-gradient(135deg, color-mix(in oklch, var(--red), transparent 25%) 0 22%, transparent 22% 33%, color-mix(in oklch, var(--amber), transparent 26%) 33% 44%, transparent 44%),
+    repeating-conic-gradient(from 0deg, oklch(5.5% 0.008 132) 0% 25%, oklch(9% 0.01 132) 0% 50%) 0 0 / 64px 64px;
+}
+
+html body #app .puzzle-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 42%;
+  width: 18%;
+  height: 255px;
+  background: repeating-linear-gradient(135deg, transparent 0 8px, oklch(34% 0.012 92 / 0.7) 9px 11px);
+  opacity: 0.75;
+}
+
+html body #app .puzzle-card:hover {
+  border-color: transparent;
+  transform: none;
+}
+
+html body #app .puzzle-name,
+html body #app .puzzle-card h3 {
+  color: var(--paper);
+  font-size: 1.42rem;
+}
+
+html body #app .puzzle-desc,
+html body #app .puzzle-meta {
+  color: var(--paper);
+}
+
+html body #app .premium-page,
+html body #app .plans-grid,
+html body #app .price-table {
+  background: var(--ink);
+}
+
+html body #app .price-card {
+  border-radius: 2px;
+}
+
+html body #app .plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+html body #app .price-num {
+  white-space: nowrap;
+  font-size: 1.82rem;
+}
+
+html body #app .price-per {
+  white-space: nowrap;
+}
+
+@media (max-width: 980px) {
+  html body #app .hero {
+    min-height: auto;
+    padding: 58px 22px 40px;
+  }
+
+  html body #app .hero::after {
+    width: 78px;
+    height: 78px;
+    left: 22px;
+    top: 62px;
+  }
+
+  html body #app .hero-inner {
+    display: block;
+    padding-left: 98px;
+  }
+
+  html body #app .hero-title {
+    font-size: 3.1rem;
+  }
+
+  html body #app .stat-row {
+    margin-top: 34px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  html body #app .stat-n {
+    font-size: 3.3rem;
+  }
+
+  html body #app .games-grid,
+  html body #app .two-col {
+    grid-template-columns: 1fr;
+  }
+
+  html body #app .lb-title {
+    font-size: 3rem;
+  }
+
+  html body #app .page-title {
+    font-size: 2.55rem;
+  }
+
+  html body #app .puzzle-card {
+    min-height: 380px;
+    padding-top: 248px;
+  }
+
+  html body #app .puzzle-card::before,
+  html body #app .puzzle-card::after {
+    height: 224px;
+  }
+}
+
+@media (max-width: 620px) {
+  html body #app .hero-inner {
+    padding-left: 0;
+  }
+
+  html body #app .hero::after {
+    position: relative;
+    display: block;
+    top: auto;
+    left: auto;
+    margin-bottom: 24px;
+  }
+
+  html body #app .hero-title {
+    font-size: 2.55rem;
+  }
+
+  html body #app .filters,
+  html body #app .t-header {
+    width: calc(100% - 28px);
+  }
+
+  html body #app .t-heading {
+    font-size: 1.75rem;
+  }
+
+  html body #app .t-sub,
+  html body #app .page-sub {
+    font-size: 1.08rem;
+  }
+}
