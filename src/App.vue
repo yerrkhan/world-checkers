@@ -83,6 +83,11 @@ onUnmounted(() => {
         </span>
       </RouterLink>
 
+      <!-- Hamburger -->
+      <button class="hamburger" @click="mobileOpen = !mobileOpen" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+
       <!-- Center links -->
       <div class="nav-links">
         <RouterLink
@@ -154,10 +159,6 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Hamburger -->
-      <button class="hamburger" @click="mobileOpen = !mobileOpen" aria-label="Menu">
-        <span></span><span></span><span></span>
-      </button>
     </nav>
 
     <!-- Mobile drawer -->
@@ -175,6 +176,14 @@ onUnmounted(() => {
         <RouterLink v-if="!user" to="/register" class="drawer-link drawer-link-amber" @click="mobileOpen=false">{{ t.nav.signupFree }}</RouterLink>
         <RouterLink v-if="user"  to="/profile"  class="drawer-link" @click="mobileOpen=false">{{ t.nav.myProfile }}</RouterLink>
         <button     v-if="user"  @click="logout; mobileOpen=false" class="drawer-link">{{ t.nav.signOut }}</button>
+        <div class="drawer-controls">
+          <button class="drawer-pill" @click="toggleTheme">
+            {{ lightMode ? t.nav.darkMode : t.nav.lightMode }}
+          </button>
+          <button class="drawer-pill" @click="setLang(lang === 'en' ? 'ru' : 'en')">
+            {{ lang === 'en' ? 'RU' : 'EN' }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -564,6 +573,22 @@ onUnmounted(() => {
 .drawer-link:hover { background: rgba(255,255,255,0.04); color: var(--text0); }
 .drawer-link-amber { color: var(--amber); font-weight: 600; }
 .drawer-hr { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+.drawer-controls {
+  display: none;
+  grid-template-columns: 1fr 72px;
+  gap: 8px;
+  padding: 8px 6px 4px;
+}
+.drawer-pill {
+  min-height: 38px;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  background: var(--ink2);
+  color: var(--text1);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
 
 /* Main content */
 .page-main {
@@ -657,11 +682,53 @@ onUnmounted(() => {
   .btn-upgrade,
   .btn-upgrade-pro { display: none; }
   .hamburger { display: flex; }
+  .drawer-controls { display: grid; }
 }
 @media (max-width: 600px) {
+  .topnav {
+    max-width: 100vw;
+    overflow: hidden;
+  }
+  .nav-right {
+    display: none;
+  }
+  .hamburger {
+    display: flex !important;
+    position: absolute;
+    top: 50%;
+    left: calc(min(100vw, 390px) - 50px);
+    right: auto;
+    width: 38px;
+    height: 38px;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0;
+    transform: translateY(-50%);
+    z-index: 2;
+  }
+  .hamburger span {
+    flex: 0 0 auto;
+    background: var(--text0);
+  }
   .btn-ghost { display: none; }
   .user-name { display: none; }
   .nav-icon-btn { display: none; }
   .nav-sep { display: none; }
+  .lang-sw { display: none; }
+  .btn-play { display: none; }
+}
+@media (max-width: 430px) {
+  .topnav { padding: 0 12px; }
+  .nav-logo { margin-right: auto; }
+  .logo-word,
+  .logo-em {
+    font-size: 0.72rem;
+    letter-spacing: 0.8px;
+  }
+  .lang-sw { display: none; }
+  .btn-play {
+    padding: 6px 11px;
+    font-size: 0.76rem;
+  }
 }
 </style>

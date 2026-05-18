@@ -774,4 +774,55 @@ const submitPayment = () => {
     min-width: 860px;
   }
 }
+
+@media (max-width: 640px) {
+  .premium-page {
+    width: min(100%, 390px);
+    max-width: 390px;
+    padding: 28px 14px 56px;
+    overflow-x: hidden;
+  }
+
+  .prem-header,
+  .prem-sub,
+  .trial-note,
+  .matrix-title-row {
+    width: 100%;
+    max-width: 100%;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  .prem-title {
+    font-size: 1.7rem;
+    line-height: 1.08;
+  }
+
+  .billing-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+
+  .billing-selected {
+    width: 100%;
+    max-width: 100%;
+    align-items: flex-start;
+    flex-direction: column;
+    overflow-wrap: anywhere;
+  }
+
+  .subscription-matrix {
+    width: calc(100% + 28px);
+    margin-left: -14px;
+    margin-right: -14px;
+    border-radius: 0;
+    overflow-x: auto;
+  }
+
+  .matrix-grid {
+    min-width: 700px;
+    grid-template-columns: 154px repeat(4, 136px);
+  }
+}
 </style>
