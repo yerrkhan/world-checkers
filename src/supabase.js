@@ -6,6 +6,51 @@ const SUPABASE_ANON_KEY = 'sb_publishable_BARjYNF0iw1lEJZ1SXra7A_4QH4sChZ'
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 // Helper functions
+export const ensureUserProfile = async (authUser) => {
+  if (!authUser?.id) return null
+
+  const { data: existing, error: existingError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', authUser.id)
+    .maybeSingle()
+
+  if (existing) return existing
+  if (existingError) {
+    console.error('Profile lookup error:', existingError)
+    return null
+  }
+
+  const email = authUser.email || ''
+  const username =
+    authUser.user_metadata?.full_name ||
+    authUser.user_metadata?.name ||
+    email.split('@')[0] ||
+    'Player'
+
+  const { data, error } = await supabase
+    .from('users')
+    .insert([{
+      id: authUser.id,
+      email,
+      username,
+      elo: 1000,
+      games_won: 0,
+      games_lost: 0,
+      country: 'KZ',
+      is_premium: false,
+    }])
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Profile insert error:', error)
+    return null
+  }
+
+  return data
+}
+
 export const getCurrentUser = async () => {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
@@ -53,6 +98,17 @@ export const signIn = async (email, password) => {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password
+  })
+
+  if (error) throw error
+  return data
+}
+
+export const signInWithGoogle = async () => {
+  const redirectTo = `${window.location.origin}/profile`
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo },
   })
 
   if (error) throw error

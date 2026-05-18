@@ -142,21 +142,6 @@ const submitPayment = () => {
     <p class="trial-note">{{ t.premium.trialNote }}</p>
   </div>
 
-  <section class="official-title-card">
-    <div class="official-title-art" aria-hidden="true">
-      <span class="title-cloud"></span>
-      <span class="title-fmjd">FMJD</span>
-    </div>
-    <div class="official-title-copy">
-      <p class="official-title-kicker">PRO TITLE PATH</p>
-      <h2>{{ t.premium.officialTitle }}</h2>
-      <p>{{ t.premium.officialSub }}</p>
-    </div>
-    <button class="official-title-btn" @click="openPayment(plans.find(p => p.id === 'platinum'))">
-      {{ t.nav.tryFree }}
-    </button>
-  </section>
-
   <div class="matrix-title-row">
     <h2>{{ t.premium.tableTitle }}</h2>
     <span>{{ t.premium.freeMonth }}</span>
@@ -433,72 +418,6 @@ const submitPayment = () => {
 .sub-note {
   text-align: center; font-size: 0.78rem; color: var(--text3);
   max-width: 600px; margin: 0 auto; line-height: 1.6;
-}
-
-.official-title-card {
-  max-width: 1020px;
-  margin: 0 auto 26px;
-  display: grid;
-  grid-template-columns: 120px 1fr auto;
-  align-items: center;
-  gap: 24px;
-  padding: 26px 28px;
-  background: linear-gradient(135deg, var(--amber), var(--amber-l));
-  color: var(--btn-ink);
-  border-radius: 8px;
-}
-.official-title-art {
-  position: relative;
-  width: 112px;
-  height: 86px;
-}
-.title-cloud {
-  position: absolute;
-  inset: 15px 10px 10px 6px;
-  background:
-    radial-gradient(circle at 25% 55%, var(--btn-ink) 0 24px, transparent 25px),
-    radial-gradient(circle at 52% 35%, var(--btn-ink) 0 30px, transparent 31px),
-    radial-gradient(circle at 78% 56%, var(--btn-ink) 0 24px, transparent 25px);
-}
-.title-fmjd {
-  position: absolute;
-  left: 39px;
-  bottom: 8px;
-  background: var(--btn-ink);
-  color: var(--amber-l);
-  border-radius: 2px;
-  padding: 2px 6px;
-  font-size: 0.7rem;
-  font-weight: 900;
-}
-.official-title-kicker {
-  font-size: 0.7rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  opacity: 0.68;
-  margin-bottom: 4px;
-}
-.official-title-copy h2 {
-  font-size: 2.1rem;
-  line-height: 1;
-  font-weight: 950;
-  margin-bottom: 8px;
-}
-.official-title-copy p:last-child {
-  max-width: 610px;
-  font-size: 0.94rem;
-  line-height: 1.42;
-  opacity: 0.78;
-}
-.official-title-btn {
-  background: var(--btn-ink);
-  color: var(--paper);
-  border: 0;
-  border-radius: 4px;
-  padding: 15px 30px;
-  font-weight: 950;
-  text-transform: uppercase;
-  white-space: nowrap;
 }
 
 .matrix-title-row {
@@ -785,12 +704,6 @@ const submitPayment = () => {
 }
 
 @media (max-width: 980px) {
-  .official-title-card {
-    grid-template-columns: 1fr;
-    text-align: center;
-    justify-items: center;
-  }
-
   .matrix-title-row {
     align-items: flex-start;
     flex-direction: column;

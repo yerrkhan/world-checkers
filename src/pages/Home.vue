@@ -107,7 +107,7 @@ liveGames.forEach((g, i) => {
 const cellBg  = (ri, ci) => (ri + ci) % 2 === 0 ? '#c8a96e' : '#6b4226'
 const pieceBg = (v) => v > 0
   ? 'radial-gradient(circle at 32% 30%, #2a2a2a, #0c0c0c)'
-  : 'radial-gradient(circle at 32% 30%, var(--paper), #dcdcdc)'
+  : 'radial-gradient(circle at 32% 30%, oklch(98% 0.006 90), oklch(86% 0.012 90))'
 const pieceBorder = (v) => v > 0 ? '1.5px solid #111' : '1.5px solid #bbb'
 const pieceShadow = (v) => v > 0
   ? '0 2px 5px rgba(0,0,0,.9), inset 0 1px rgba(255,255,255,.08)'
@@ -435,19 +435,6 @@ onUnmounted(() => {
     <p class="upgrade-eyebrow">{{ t.home.membershipEyebrow }}</p>
     <h2 class="upgrade-title">{{ t.home.membershipTitle }}</h2>
     <p class="upgrade-sub">{{ t.home.membershipSub }}</p>
-
-    <div class="official-title-strip">
-      <div class="official-mark">
-        <span class="cloud-left"></span>
-        <span class="title-knight">FMJD</span>
-      </div>
-      <div class="official-copy">
-        <div class="official-kicker">PRO TITLE PATH</div>
-        <h3>{{ t.home.titleOffer }}</h3>
-        <p>{{ t.home.titleOfferSub }}</p>
-      </div>
-      <RouterLink to="/premium" class="official-cta">{{ t.home.tryFree }}</RouterLink>
-    </div>
 
     <!-- Billing toggle -->
     <div class="billing-toggle">
@@ -991,77 +978,6 @@ onUnmounted(() => {
   line-height: 1.6;
 }
 
-.official-title-strip {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 20px;
-  background: linear-gradient(135deg, var(--amber), var(--amber-l));
-  color: var(--btn-ink);
-  border-radius: 6px;
-  padding: 22px 24px;
-  margin: 0 auto 28px;
-  max-width: 820px;
-}
-.official-mark {
-  position: relative;
-  width: 76px;
-  height: 62px;
-  display: grid;
-  place-items: end center;
-}
-.cloud-left {
-  position: absolute;
-  width: 62px;
-  height: 38px;
-  left: 2px;
-  bottom: 8px;
-  background:
-    radial-gradient(circle at 28% 52%, var(--btn-ink) 0 17px, transparent 18px),
-    radial-gradient(circle at 50% 34%, var(--btn-ink) 0 22px, transparent 23px),
-    radial-gradient(circle at 74% 55%, var(--btn-ink) 0 17px, transparent 18px);
-}
-.title-knight {
-  position: relative;
-  z-index: 1;
-  font-size: 0.62rem;
-  font-weight: 900;
-  background: var(--btn-ink);
-  color: var(--amber-l);
-  padding: 2px 5px;
-  border-radius: 2px;
-}
-.official-copy { min-width: 0; }
-.official-kicker {
-  font-size: 0.68rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  opacity: 0.75;
-  margin-bottom: 3px;
-}
-.official-copy h3 {
-  font-size: 1.35rem;
-  line-height: 1.1;
-  font-weight: 900;
-  margin-bottom: 4px;
-}
-.official-copy p {
-  max-width: 520px;
-  font-size: 0.86rem;
-  line-height: 1.35;
-  opacity: 0.82;
-}
-.official-cta {
-  background: var(--btn-ink);
-  color: var(--paper);
-  border-radius: 3px;
-  padding: 12px 22px;
-  font-weight: 900;
-  text-transform: uppercase;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
 /* Billing toggle */
 .billing-toggle {
   display: flex;
@@ -1302,7 +1218,6 @@ onUnmounted(() => {
   .stat-sep { width: 40px; height: 1px; }
   .games-grid { padding: 20px; grid-template-columns: repeat(2, 1fr); }
   .section-upgrade { padding: 44px 20px 60px; }
-  .official-title-strip { grid-template-columns: 1fr; text-align: center; justify-items: center; }
 }
 @media (max-width: 600px) {
   .hero-title { font-size: 2.1rem; }

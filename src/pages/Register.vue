@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { signUp } from '../supabase'
+import { signInWithGoogle, signUp } from '../supabase'
 import { useI18n } from '../i18n.js'
 
 const router   = useRouter()
@@ -80,6 +80,17 @@ const register = async () => {
     loading.value = false
   }
 }
+
+const registerWithGoogle = async () => {
+  error.value = ''
+  loading.value = true
+  try {
+    await signInWithGoogle()
+  } catch (err) {
+    error.value = err.message || t.value.register.errGeneric
+    loading.value = false
+  }
+}
 </script>
 
 <template>
@@ -98,6 +109,13 @@ const register = async () => {
     <div v-if="success" class="msg-success">{{ success }}</div>
 
     <div class="form-fields">
+      <button @click="registerWithGoogle" class="btn-google" :disabled="loading">
+        <span class="google-mark">G</span>
+        {{ t.register.google }}
+      </button>
+
+      <div class="auth-divider"><span>{{ t.register.orEmail }}</span></div>
+
       <!-- Name row -->
       <div class="field-row">
         <div class="field">
@@ -204,6 +222,45 @@ const register = async () => {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.btn-google {
+  min-height: 44px;
+  border: 1px solid var(--border2);
+  border-radius: 7px;
+  background: var(--panel);
+  color: var(--text0);
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.btn-google:disabled { opacity: 0.65; cursor: not-allowed; }
+.google-mark {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--btn-ink);
+  font-weight: 950;
+}
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text3);
+  font-size: 0.75rem;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: var(--border);
 }
 
 .field-row {

@@ -1142,28 +1142,11 @@ html body #app .hero {
   overflow: hidden;
 }
 
-html body #app .hero::after {
-  content: "";
-  position: absolute;
-  top: 86px;
-  left: 38px;
-  width: 118px;
-  height: 118px;
-  background:
-    linear-gradient(45deg, var(--paper) 25%, transparent 25% 75%, var(--paper) 75%),
-    linear-gradient(45deg, var(--paper) 25%, transparent 25% 75%, var(--paper) 75%);
-  background-position: 0 0, 12px 12px;
-  background-size: 24px 24px;
-  clip-path: polygon(50% 0, 94% 25%, 94% 75%, 50% 100%, 6% 75%, 6% 25%);
-  opacity: 0.95;
-}
-
 html body #app .hero-inner {
   max-width: 1640px;
   display: grid;
   grid-template-columns: minmax(300px, 420px) 1fr;
   gap: 52px;
-  padding-left: 136px;
 }
 
 html body #app .eyebrow,
@@ -1552,16 +1535,13 @@ html body #app .hero {
 }
 
 html body #app .hero::after {
-  top: 126px;
-  left: max(36px, calc(50% - 630px));
-  width: 128px;
-  height: 128px;
+  content: none;
+  display: none;
 }
 
 html body #app .hero-inner {
   max-width: 1160px;
   margin-inline: auto;
-  padding-left: 160px;
   grid-template-columns: minmax(320px, 390px) minmax(420px, 1fr);
   align-items: center;
   gap: 58px;
@@ -1579,20 +1559,28 @@ html body #app .hero-sub {
 html body #app .stat-row {
   justify-self: stretch;
   align-self: center;
-  max-width: 600px;
+  max-width: 640px;
   background: oklch(7% 0.012 132);
   border: 1px solid oklch(18% 0.012 132);
-  padding: 30px 34px;
-  gap: 22px;
+  padding: 28px 30px;
+  gap: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 html body #app .stat-n {
-  font-size: 4.15rem;
+  font-size: 3.55rem;
+  white-space: nowrap;
 }
 
 html body #app .stat-l {
   color: var(--text1);
-  font-size: 0.92rem;
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+
+html body #app .stat-sep {
+  display: none;
 }
 
 html.light-mode {
@@ -1703,6 +1691,7 @@ html.light-mode body #app .stat-row {
 
 html.light-mode body #app .stat-n {
   color: var(--text0);
+  font-size: 3.25rem;
 }
 
 html.light-mode body #app .stat-l {

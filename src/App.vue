@@ -1,15 +1,18 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { RouterLink, RouterView } from 'vue-router'
-import { supabase } from './supabase.js'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { ensureUserProfile, supabase } from './supabase.js'
 import { useI18n } from './i18n.js'
 
 const { t, lang, setLang } = useI18n()
+const route = useRoute()
 
 const user = ref(null)
 const mobileOpen = ref(false)
 const lightMode = ref(localStorage.getItem('wc_theme') === 'light')
 const notifOpen = ref(false)
+const titlePopupOpen = ref(localStorage.getItem('wc_title_popup_closed') !== '1')
+const showTitlePopup = computed(() => titlePopupOpen.value && route.path === '/')
 
 const toggleTheme = () => {
   lightMode.value = !lightMode.value
@@ -31,15 +34,26 @@ const logout = async () => {
   user.value = null
 }
 
+const closeTitlePopup = () => {
+  titlePopupOpen.value = false
+  localStorage.setItem('wc_title_popup_closed', '1')
+}
+
 onMounted(async () => {
   if (lightMode.value) document.documentElement.classList.add('light-mode')
   const saved = localStorage.getItem('wc_user')
   if (saved) user.value = JSON.parse(saved)
   const { data: { session } } = await supabase.auth.getSession()
-  if (session?.user) user.value = session.user
+  if (session?.user) {
+    user.value = session.user
+    ensureUserProfile(session.user)
+  }
   supabase.auth.onAuthStateChange((_, session) => {
     user.value = session?.user ?? null
-    if (session?.user) localStorage.setItem('wc_user', JSON.stringify(session.user))
+    if (session?.user) {
+      localStorage.setItem('wc_user', JSON.stringify(session.user))
+      ensureUserProfile(session.user)
+    }
     else localStorage.removeItem('wc_user')
   })
 })
@@ -76,28 +90,6 @@ onMounted(async () => {
           <span>{{ t.nav.upgradePro }}</span>
           <span class="try-free-tag">{{ t.nav.tryFree }}</span>
         </RouterLink>
-        <div class="arena-actions" aria-label="Arena shortcuts">
-          <RouterLink to="/play" class="arena-icon arena-board" title="Arena board"/>
-          <button class="arena-icon" @click="toggleTheme" :title="lightMode ? t.nav.darkMode : t.nav.lightMode">
-            <svg v-if="lightMode" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-            </svg>
-            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="5" y="5" width="14" height="14" rx="2"/><path d="M8 16 16 8"/>
-            </svg>
-          </button>
-          <button class="arena-icon" @click="notifOpen=!notifOpen" :title="t.nav.notifications">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-          </button>
-          <RouterLink to="/leaderboard" class="arena-icon arena-title-icon" title="Titles">
-            <span class="title-zero">0</span>
-          </RouterLink>
-          <RouterLink :to="user ? '/profile' : '/register'" class="arena-avatar" :title="user ? t.nav.myProfile : t.nav.register">
-            <span>{{ user ? (user.email||'U')[0].toUpperCase() : 'M' }}</span>
-          </RouterLink>
-        </div>
         <!-- Language slider -->
         <div class="lang-sw">
           <span class="ls-lbl" :class="{ 'ls-on': lang === 'en' }" @click="setLang('en')">EN</span>
@@ -106,6 +98,20 @@ onMounted(async () => {
           </button>
           <span class="ls-lbl" :class="{ 'ls-on': lang === 'ru' }" @click="setLang('ru')">RU</span>
         </div>
+        <div class="nav-sep"/>
+        <button class="nav-icon-btn" @click="notifOpen=!notifOpen" :title="t.nav.notifications">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+        <button class="nav-icon-btn" @click="toggleTheme" :title="lightMode ? t.nav.darkMode : t.nav.lightMode">
+          <svg v-if="lightMode" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+          <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </button>
         <div class="nav-sep"/>
         <template v-if="user">
           <RouterLink to="/profile" class="user-chip">
@@ -167,6 +173,15 @@ onMounted(async () => {
     <main class="page-main">
       <RouterView />
     </main>
+
+    <aside v-if="showTitlePopup" class="title-popup" aria-label="FMJD title offer">
+      <button class="title-popup-close" @click="closeTitlePopup" aria-label="Close">×</button>
+      <div class="title-popup-mark"><span>FMJD</span></div>
+      <p class="title-popup-kicker">PRO</p>
+      <h2>{{ t.home.titleOffer }}</h2>
+      <p>{{ t.home.titleOfferSub }}</p>
+      <RouterLink to="/premium" class="title-popup-cta">{{ t.home.tryFree }}</RouterLink>
+    </aside>
   </div>
 </template>
 
@@ -380,85 +395,6 @@ onMounted(async () => {
   line-height: 1;
 }
 
-.arena-actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: 4px;
-}
-.arena-icon,
-.arena-avatar {
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text0);
-  background: transparent;
-  border: none;
-  border-radius: 4px;
-  padding: 0;
-  text-decoration: none;
-  transition: color 0.15s, background 0.15s, transform 0.15s;
-}
-.arena-icon:hover,
-.arena-avatar:hover {
-  color: var(--amber-l);
-  background: oklch(96% 0.01 92 / 0.08);
-}
-.arena-board {
-  background:
-    linear-gradient(45deg, var(--paper) 25%, transparent 25% 75%, var(--paper) 75%),
-    linear-gradient(45deg, var(--paper) 25%, transparent 25% 75%, var(--paper) 75%);
-  background-position: 0 0, 4px 4px;
-  background-size: 8px 8px;
-  border-radius: 2px;
-}
-.arena-board:hover {
-  transform: translateY(-1px);
-}
-.arena-title-icon {
-  position: relative;
-  width: 36px;
-}
-.arena-title-icon::before,
-.arena-title-icon::after {
-  content: "";
-  position: absolute;
-  width: 16px;
-  height: 10px;
-  border: 2px solid currentColor;
-  border-top: 0;
-  transform: skewY(-23deg);
-}
-.arena-title-icon::before {
-  left: 3px;
-  bottom: 4px;
-}
-.arena-title-icon::after {
-  right: 3px;
-  bottom: 4px;
-  transform: skewY(23deg);
-}
-.title-zero {
-  position: relative;
-  top: -6px;
-  font-size: 0.72rem;
-  font-weight: 800;
-}
-.arena-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid oklch(46% 0.14 292);
-  background:
-    radial-gradient(circle at 70% 25%, oklch(66% 0.16 329), transparent 22%),
-    linear-gradient(135deg, oklch(25% 0.12 273), oklch(43% 0.13 302));
-  color: var(--paper);
-  font-weight: 900;
-  box-shadow: inset 0 0 0 2px oklch(8% 0.02 132 / 0.45);
-}
-
 .btn-ghost {
   background: transparent;
   border: none;
@@ -625,6 +561,84 @@ onMounted(async () => {
   padding-top: 54px;
   min-height: 100vh;
   background: var(--ink);
+}
+
+.title-popup {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 1200;
+  width: min(340px, calc(100vw - 28px));
+  background: linear-gradient(135deg, var(--amber), var(--amber-l));
+  color: var(--btn-ink);
+  border-radius: 8px;
+  padding: 24px 22px 22px;
+  box-shadow: 0 24px 70px oklch(5% 0.015 90 / 0.5);
+}
+.title-popup-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: 0;
+  color: var(--btn-ink);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.title-popup-mark {
+  width: 72px;
+  height: 52px;
+  margin-bottom: 8px;
+  display: grid;
+  place-items: end center;
+  background:
+    radial-gradient(circle at 25% 55%, var(--btn-ink) 0 18px, transparent 19px),
+    radial-gradient(circle at 52% 35%, var(--btn-ink) 0 23px, transparent 24px),
+    radial-gradient(circle at 78% 56%, var(--btn-ink) 0 18px, transparent 19px);
+}
+.title-popup-mark span {
+  position: relative;
+  bottom: -2px;
+  background: var(--btn-ink);
+  color: var(--amber-l);
+  border-radius: 2px;
+  padding: 2px 5px;
+  font-size: 0.62rem;
+  font-weight: 900;
+}
+.title-popup-kicker {
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin-bottom: 4px;
+}
+.title-popup h2 {
+  max-width: 260px;
+  font-size: 2rem;
+  font-weight: 950;
+  line-height: 0.95;
+  margin-bottom: 12px;
+}
+.title-popup p:not(.title-popup-kicker) {
+  font-size: 0.86rem;
+  line-height: 1.4;
+  margin-bottom: 18px;
+  color: oklch(18% 0.018 84 / 0.82);
+}
+.title-popup-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  background: var(--btn-ink);
+  color: var(--paper);
+  border-radius: 4px;
+  font-weight: 950;
+  text-transform: uppercase;
+  text-decoration: none;
 }
 
 /* ── Responsive ── */
