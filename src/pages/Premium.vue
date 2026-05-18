@@ -210,6 +210,49 @@ const submitPayment = () => {
     </div>
   </div>
 
+  <div class="premium-mobile-plans">
+    <div
+      v-for="plan in plans"
+      :key="`mobile-${plan.id}`"
+      class="premium-mobile-card"
+      :class="{ 'premium-mobile-popular': plan.popular, 'premium-mobile-free': plan.id === 'free' }"
+    >
+      <div class="premium-mobile-top">
+        <div>
+          <div v-if="plan.popular" class="premium-mobile-badge">{{ t.premium.popular }}</div>
+          <div class="premium-mobile-name" :style="{ color: plan.color }">{{ plan.name }}</div>
+        </div>
+        <div class="premium-mobile-price">
+          <template v-if="plan.id === 'free'">
+            <strong>{{ displayPrice(plan) }}</strong>
+          </template>
+          <template v-else>
+            <span v-if="hasFreeMonth" class="premium-mobile-trial">{{ t.premium.freeMonth }}</span>
+            <strong>{{ displayPrice(plan) }}<span>{{ displayPeriod }}</span></strong>
+          </template>
+        </div>
+      </div>
+
+      <div class="premium-mobile-features">
+        <div v-for="feature in plan.features" :key="`${plan.id}-${feature.label}`" class="premium-mobile-feature">
+          <span>{{ feature.label }}</span>
+          <span v-if="feature.val === t.premium.yes" class="premium-mobile-check">✓</span>
+          <span v-else-if="feature.val === t.premium.no" class="premium-mobile-dash">—</span>
+          <strong v-else>{{ feature.val }}</strong>
+        </div>
+      </div>
+
+      <button
+        class="premium-mobile-btn"
+        :class="{ 'premium-mobile-btn-popular': plan.popular, 'premium-mobile-btn-current': plan.current }"
+        :disabled="plan.current"
+        @click="openPayment(plan)"
+      >
+        {{ plan.cta }}
+      </button>
+    </div>
+  </div>
+
   <p class="sub-note">{{ t.premium.subscriptionNote }}</p>
 
 </div>
@@ -662,6 +705,10 @@ const submitPayment = () => {
   font-weight: 600;
 }
 
+.premium-mobile-plans {
+  display: none;
+}
+
 /* Payment modal */
 .pay-overlay {
   position: fixed; inset: 0;
@@ -804,6 +851,11 @@ const submitPayment = () => {
     width: 100%;
   }
 
+  .tog-btn {
+    min-height: 42px;
+    justify-content: center;
+  }
+
   .billing-selected {
     width: 100%;
     max-width: 100%;
@@ -813,16 +865,145 @@ const submitPayment = () => {
   }
 
   .subscription-matrix {
-    width: calc(100% + 28px);
-    margin-left: -14px;
-    margin-right: -14px;
-    border-radius: 0;
-    overflow-x: auto;
+    display: none;
   }
 
-  .matrix-grid {
-    min-width: 700px;
-    grid-template-columns: 154px repeat(4, 136px);
+  .premium-mobile-plans {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .premium-mobile-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--ink2);
+    padding: 16px;
+    overflow: hidden;
+  }
+
+  .premium-mobile-popular {
+    border-color: var(--blue);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--blue), transparent 55%);
+  }
+
+  .premium-mobile-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+
+  .premium-mobile-name {
+    font-size: 1.05rem;
+    font-weight: 950;
+  }
+
+  .premium-mobile-badge {
+    display: inline-flex;
+    margin-bottom: 6px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--amber);
+    color: var(--btn-ink);
+    font-size: 0.62rem;
+    font-weight: 950;
+    text-transform: uppercase;
+  }
+
+  .premium-mobile-price {
+    min-width: 126px;
+    text-align: right;
+  }
+
+  .premium-mobile-trial {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--green);
+    font-size: 0.68rem;
+    font-weight: 950;
+    text-transform: uppercase;
+  }
+
+  .premium-mobile-price strong {
+    display: block;
+    color: var(--text0);
+    font-size: 1.08rem;
+    line-height: 1.2;
+  }
+
+  .premium-mobile-price strong span {
+    color: var(--text2);
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+
+  .premium-mobile-features {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 0 -16px 14px;
+  }
+
+  .premium-mobile-feature {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 16px;
+    border-top: 1px solid var(--border);
+    color: var(--text1);
+    font-size: 0.84rem;
+  }
+
+  .premium-mobile-feature:first-child {
+    border-top: 0;
+  }
+
+  .premium-mobile-feature strong {
+    color: var(--amber);
+    text-align: right;
+    max-width: 52%;
+  }
+
+  .premium-mobile-check {
+    width: 23px;
+    height: 23px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--blue);
+    color: var(--paper);
+    font-weight: 950;
+    flex: 0 0 auto;
+  }
+
+  .premium-mobile-dash {
+    color: var(--text3);
+    font-weight: 800;
+  }
+
+  .premium-mobile-btn {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid var(--border2);
+    border-radius: 5px;
+    background: var(--ink3);
+    color: var(--text0);
+    font-family: inherit;
+    font-size: 0.86rem;
+    font-weight: 950;
+  }
+
+  .premium-mobile-btn-popular {
+    border-color: var(--blue);
+    background: var(--blue);
+    color: var(--paper);
+  }
+
+  .premium-mobile-btn-current {
+    opacity: 0.58;
   }
 }
 </style>
