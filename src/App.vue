@@ -133,7 +133,6 @@ onUnmounted(() => {
         </template>
         <template v-else>
           <RouterLink to="/play" class="btn-play">{{ t.nav.lobby }}</RouterLink>
-          <RouterLink to="/login" class="btn-ghost">{{ t.nav.login }}</RouterLink>
           <RouterLink to="/register" class="btn-register">{{ t.nav.register }}</RouterLink>
         </template>
       </div>
@@ -173,7 +172,6 @@ onUnmounted(() => {
         >{{ item.label }}</RouterLink>
         <hr class="drawer-hr">
         <RouterLink to="/premium" class="drawer-link drawer-link-amber" @click="mobileOpen=false">{{ t.nav.upgradePro }} · {{ t.nav.tryFree }}</RouterLink>
-        <RouterLink v-if="!user" to="/login"    class="drawer-link" @click="mobileOpen=false">{{ t.nav.login }}</RouterLink>
         <RouterLink v-if="!user" to="/register" class="drawer-link drawer-link-amber" @click="mobileOpen=false">{{ t.nav.signupFree }}</RouterLink>
         <RouterLink v-if="user"  to="/profile"  class="drawer-link" @click="mobileOpen=false">{{ t.nav.myProfile }}</RouterLink>
         <button     v-if="user"  @click="logout; mobileOpen=false" class="drawer-link">{{ t.nav.signOut }}</button>

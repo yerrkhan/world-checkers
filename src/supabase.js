@@ -104,11 +104,30 @@ export const signIn = async (email, password) => {
   return data
 }
 
+const getOAuthRedirectUrl = () => {
+  const { protocol, hostname, port, origin } = window.location
+  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1'
+
+  if (isLocal) {
+    const devHost = hostname === '127.0.0.1' ? '127.0.0.1' : 'localhost'
+    const devPort = port && port !== '3000' ? port : '5173'
+    return `${protocol}//${devHost}:${devPort}/profile`
+  }
+
+  return `${origin}/profile`
+}
+
 export const signInWithGoogle = async () => {
-  const redirectTo = `${window.location.origin}/profile`
+  const redirectTo = getOAuthRedirectUrl()
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo },
+    options: {
+      redirectTo,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'select_account',
+      },
+    },
   })
 
   if (error) throw error

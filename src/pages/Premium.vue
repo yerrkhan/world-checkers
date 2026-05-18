@@ -96,6 +96,8 @@ const totalAmount = computed(() => {
   return `${selectedPlan.value.monthlyPrice.toLocaleString()} KZT`
 })
 
+const hasFreeMonth = computed(() => billingCycle.value === 'yearly')
+
 const billingSummary = computed(() => {
   if (billingCycle.value === 'yearly') {
     return {
@@ -138,7 +140,7 @@ const submitPayment = () => {
   <!-- Header -->
   <div class="prem-header">
     <div class="prem-eyebrow">PREMIUM</div>
-    <div class="trial-badge">{{ t.premium.freeMonth }}</div>
+    <div v-if="hasFreeMonth" class="trial-badge">{{ t.premium.freeMonth }}</div>
     <h1 class="prem-title">{{ t.premium.title }}</h1>
     <p class="prem-sub">{{ t.premium.sub }}</p>
 
@@ -158,12 +160,12 @@ const submitPayment = () => {
       <strong>{{ billingSummary.label }}</strong>
       <span>{{ billingSummary.detail }}</span>
     </div>
-    <p class="trial-note">{{ t.premium.trialNote }}</p>
+    <p class="trial-note">{{ hasFreeMonth ? t.premium.trialNote : t.premium.monthlyNoTrial }}</p>
   </div>
 
   <div class="matrix-title-row">
     <h2>{{ t.premium.tableTitle }}</h2>
-    <span>{{ t.premium.freeMonth }}</span>
+    <span>{{ hasFreeMonth ? t.premium.freeMonth : t.premium.monthlyNoTrialShort }}</span>
   </div>
 
   <div class="subscription-matrix">
@@ -201,7 +203,7 @@ const submitPayment = () => {
           <button class="matrix-btn" :class="{ 'matrix-btn-popular': plan.popular }" @click="openPayment(plan)">
             {{ plan.cta }}
           </button>
-          <span class="matrix-trial">{{ t.premium.freeMonth }}</span>
+          <span v-if="hasFreeMonth" class="matrix-trial">{{ t.premium.freeMonth }}</span>
           <strong>{{ displayPrice(plan) }}<span>{{ displayPeriod }}</span></strong>
         </template>
       </div>
@@ -241,7 +243,7 @@ const submitPayment = () => {
             <span>{{ t.premium.payBilling }}</span>
             <span>{{ billingCycle === 'yearly' ? t.premium.yearly : t.premium.monthly }}</span>
           </div>
-          <div class="pay-row trial-row">
+          <div v-if="hasFreeMonth" class="pay-row trial-row">
             <span>{{ t.premium.freeMonth }}</span>
             <span>{{ t.premium.trialApplied }}</span>
           </div>
