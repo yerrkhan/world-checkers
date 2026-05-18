@@ -437,7 +437,7 @@ onUnmounted(() => {
     <p class="upgrade-sub">{{ t.home.membershipSub }}</p>
 
     <!-- Billing toggle -->
-    <div class="billing-toggle">
+    <div class="upgrade-billing-toggle">
       <span :class="{ 'tog-on': !yearly }" @click="yearly=false">{{ t.home.monthly }}</span>
       <button class="tog-switch" @click="yearly=!yearly">
         <span class="tog-thumb" :class="{ 'tog-right': yearly }"/>
@@ -497,6 +497,52 @@ onUnmounted(() => {
             </button>
           </template>
         </div>
+      </div>
+    </div>
+
+    <div class="mobile-plan-list">
+      <div
+        v-for="plan in plans"
+        :key="`mobile-${plan.id}`"
+        class="mobile-plan-card"
+        :class="{ 'mobile-plan-featured': plan.highlight, 'mobile-plan-free': plan.id === 'free' }"
+      >
+        <div class="mobile-plan-top">
+          <div>
+            <div v-if="plan.badge" class="mobile-plan-badge">{{ plan.badge }}</div>
+            <h3>{{ plan.name }}</h3>
+          </div>
+          <div class="mobile-plan-price">
+            <template v-if="plan.id === 'free'">
+              <strong>{{ t.home.freeForever }}</strong>
+            </template>
+            <template v-else>
+              <span v-if="yearly" class="mobile-price-was">{{ plan.monthlyPrice.toLocaleString() }} KZT/mo</span>
+              <strong>{{ (yearly ? plan.yearlyPrice : plan.monthlyPrice).toLocaleString() }} <span>KZT/mo</span></strong>
+            </template>
+          </div>
+        </div>
+
+        <div class="mobile-feature-list">
+          <div v-for="(feat, fi) in featureRows" :key="`${plan.id}-${fi}`" class="mobile-feature-row">
+            <span>{{ feat.label }}</span>
+            <span :class="plan.features[fi] ? 'mobile-check' : 'mobile-dash'">
+              {{ plan.features[fi] ? '✓' : '—' }}
+            </span>
+          </div>
+        </div>
+
+        <RouterLink
+          v-if="plan.id !== 'free'"
+          to="/premium"
+          class="mobile-plan-btn"
+          :class="{ 'mobile-plan-btn-featured': plan.highlight }"
+        >
+          {{ plan.cta }}
+        </RouterLink>
+        <button v-else class="mobile-plan-btn mobile-plan-btn-current" disabled>
+          {{ plan.cta }}
+        </button>
       </div>
     </div>
 
@@ -979,7 +1025,7 @@ onUnmounted(() => {
 }
 
 /* Billing toggle */
-.billing-toggle {
+.upgrade-billing-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1122,6 +1168,10 @@ onUnmounted(() => {
   line-height: 1.6;
 }
 
+.mobile-plan-list {
+  display: none;
+}
+
 /* ── WATCH MODAL ── */
 .modal-overlay {
   position: fixed;
@@ -1222,8 +1272,162 @@ onUnmounted(() => {
 @media (max-width: 600px) {
   .hero-title { font-size: 2.1rem; }
   .hero-btns { flex-direction: column; }
-  .pt-grid { grid-template-columns: 1fr repeat(2, 1fr); }
-  .pt-plan-col:nth-child(n+4) { display: none; }
+  .upgrade-title {
+    font-size: 1.75rem;
+    text-align: left;
+  }
+  .upgrade-eyebrow,
+  .upgrade-sub {
+    text-align: left;
+  }
+  .upgrade-sub {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .upgrade-billing-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 18px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--ink2);
+  }
+  .upgrade-billing-toggle .tog-switch {
+    display: none;
+  }
+  .upgrade-billing-toggle > span {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border-radius: 5px;
+    text-align: center;
+  }
+  .upgrade-billing-toggle > span.tog-on {
+    background: var(--green);
+    color: var(--btn-ink);
+    font-weight: 900;
+  }
+  .save-tag {
+    margin-left: 0;
+    font-size: 0.6rem;
+    color: var(--btn-ink);
+    border-color: color-mix(in oklch, var(--btn-ink), transparent 70%);
+    background: color-mix(in oklch, var(--btn-ink), transparent 86%);
+  }
+  .price-table {
+    display: none;
+  }
+  .mobile-plan-list {
+    display: grid;
+    gap: 12px;
+  }
+  .mobile-plan-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--ink2);
+    padding: 16px;
+  }
+  .mobile-plan-featured {
+    border-color: var(--amber);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--amber), transparent 70%);
+  }
+  .mobile-plan-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  .mobile-plan-top h3 {
+    font-size: 1rem;
+    font-weight: 900;
+    color: var(--text0);
+    margin: 0;
+  }
+  .mobile-plan-badge {
+    display: inline-flex;
+    margin-bottom: 6px;
+    padding: 3px 7px;
+    border-radius: 4px;
+    background: var(--amber);
+    color: var(--btn-ink);
+    font-size: 0.62rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+  .mobile-plan-price {
+    text-align: right;
+    min-width: 116px;
+  }
+  .mobile-plan-price strong {
+    display: block;
+    color: var(--amber);
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+  .mobile-plan-price strong span,
+  .mobile-price-was {
+    color: var(--text3);
+    font-size: 0.68rem;
+    font-weight: 500;
+  }
+  .mobile-price-was {
+    display: block;
+    text-decoration: line-through;
+    margin-bottom: 2px;
+  }
+  .mobile-feature-list {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 0 -16px 14px;
+  }
+  .mobile-feature-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 16px;
+    border-top: 1px solid var(--border);
+    color: var(--text1);
+    font-size: 0.84rem;
+  }
+  .mobile-feature-row:first-child {
+    border-top: 0;
+  }
+  .mobile-check {
+    color: var(--green);
+    font-weight: 900;
+  }
+  .mobile-dash {
+    color: var(--text3);
+  }
+  .mobile-plan-btn {
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border2);
+    border-radius: 5px;
+    background: var(--ink3);
+    color: var(--text0);
+    font-size: 0.86rem;
+    font-weight: 900;
+    text-decoration: none;
+  }
+  .mobile-plan-btn-featured {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--btn-ink);
+  }
+  .mobile-plan-btn-current {
+    opacity: 0.58;
+  }
   .games-grid { grid-template-columns: 1fr; }
 }
 </style>
