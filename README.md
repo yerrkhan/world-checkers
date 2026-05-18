@@ -75,41 +75,6 @@
 - **Supabase** — backend, база данных и авторизация.
 - **Git / GitHub** — контроль версий и публикация кода.
 
-## Структура проекта
-
-```text
-world-checkers/
-├── public/
-├── src/
-│   ├── components/
-│   │   ├── GameBoard.vue
-│   │   ├── GameBoard10.vue
-│   │   └── NavBar.vue
-│   ├── game/
-│   │   └── draughts10.js
-│   ├── pages/
-│   │   ├── Game.vue
-│   │   ├── Home.vue
-│   │   ├── Leaderboard.vue
-│   │   ├── Lessons.vue
-│   │   ├── Login.vue
-│   │   ├── Play.vue
-│   │   ├── Profile.vue
-│   │   ├── Puzzles.vue
-│   │   ├── Register.vue
-│   │   └── Tournaments.vue
-│   ├── App.vue
-│   ├── firebase.js
-│   ├── main.js
-│   └── supabase.js
-├── index.html
-├── package.json
-├── vite.config.js
-└── README.md
-```
-
-
-
 ## Почему это ценно
 
 **World Checkers** может быть полезен:
