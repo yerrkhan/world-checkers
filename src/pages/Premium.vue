@@ -142,45 +142,65 @@ const submitPayment = () => {
     <p class="trial-note">{{ t.premium.trialNote }}</p>
   </div>
 
-  <!-- Plans grid -->
-  <div class="plans-grid">
-    <div v-for="plan in plans" :key="plan.id"
-      class="plan-card"
-      :class="{ 'plan-popular': plan.popular, 'plan-free': plan.id==='free' }">
+  <section class="official-title-card">
+    <div class="official-title-art" aria-hidden="true">
+      <span class="title-cloud"></span>
+      <span class="title-fmjd">FMJD</span>
+    </div>
+    <div class="official-title-copy">
+      <p class="official-title-kicker">PRO TITLE PATH</p>
+      <h2>{{ t.premium.officialTitle }}</h2>
+      <p>{{ t.premium.officialSub }}</p>
+    </div>
+    <button class="official-title-btn" @click="openPayment(plans.find(p => p.id === 'platinum'))">
+      {{ t.nav.tryFree }}
+    </button>
+  </section>
 
-      <div v-if="plan.popular" class="popular-badge">{{ t.premium.popular }}</div>
+  <div class="matrix-title-row">
+    <h2>{{ t.premium.tableTitle }}</h2>
+    <span>{{ t.premium.freeMonth }}</span>
+  </div>
 
-      <div class="plan-name" :style="{ color: plan.color }">{{ plan.name }}</div>
-      <div class="plan-price">
-        <span class="price-num">{{ displayPrice(plan) }}</span>
-        <span v-if="plan.id !== 'free'" class="price-per">{{ displayPeriod }}</span>
+  <div class="subscription-matrix">
+    <div class="matrix-grid matrix-head">
+      <div class="matrix-feature-head">{{ t.premium.unlimited }}</div>
+      <div v-for="plan in plans" :key="plan.id"
+        class="matrix-plan-head"
+        :class="{ 'matrix-popular': plan.popular, 'matrix-free': plan.id==='free' }">
+        <div v-if="plan.popular" class="matrix-badge">{{ t.premium.popular }}</div>
+        <div class="matrix-plan-icon" :style="{ color: plan.color }">{{ plan.id === 'free' ? '•' : plan.id === 'gold' ? '★' : plan.id === 'platinum' ? '♛' : '◆' }}</div>
+        <div class="matrix-plan-name" :style="{ color: plan.color }">{{ plan.name }}</div>
       </div>
-      <div v-if="plan.id !== 'free' && billingCycle==='yearly'" class="billed-note">
-        {{ t.premium.billed }}
-      </div>
-      <div v-if="plan.id !== 'free'" class="plan-trial">
-        {{ t.premium.freeMonth }}
-      </div>
+    </div>
 
-      <div class="plan-features">
-        <div v-for="f in plan.features" :key="f.label" class="feat-row">
-          <span class="feat-label">{{ f.label }}</span>
-          <span class="feat-val"
-            :style="{
-              color: f.val === t.premium.no ? 'var(--text3)' : f.val === t.premium.yes ? '#4caf50' : 'var(--amber)',
-              fontWeight: f.val === t.premium.yes || f.val === t.premium.no ? '700' : '600',
-            }">{{ f.val }}</span>
-        </div>
+    <div v-for="(feature, fi) in plans[0].features" :key="feature.label" class="matrix-grid matrix-row">
+      <div class="matrix-feature">
+        <span class="matrix-feature-icon">{{ ['PZ','LS','AI','AN','MV','PR','AD','CS'][fi] }}</span>
+        <span>{{ feature.label }}</span>
       </div>
+      <div v-for="plan in plans" :key="plan.id" class="matrix-value" :class="{ 'matrix-popular': plan.popular }">
+        <span v-if="plan.features[fi].val === t.premium.yes" class="check-dot">✓</span>
+        <span v-else-if="plan.features[fi].val === t.premium.no" class="cross-dot">×</span>
+        <span v-else>{{ plan.features[fi].val }}</span>
+      </div>
+    </div>
 
-      <button
-        class="plan-btn"
-        :class="{ 'plan-btn-current': plan.current || plan.id==='free', 'plan-btn-popular': plan.popular }"
-        :style="plan.id!=='free' && !plan.current ? { background: plan.color } : {}"
-        :disabled="plan.current || plan.id==='free'"
-        @click="openPayment(plan)">
-        {{ plan.cta }}
-      </button>
+    <div class="matrix-grid matrix-price-row">
+      <div class="matrix-price-note">{{ t.premium.subscriptionNote }}</div>
+      <div v-for="plan in plans" :key="plan.id" class="matrix-price" :class="{ 'matrix-popular': plan.popular }">
+        <template v-if="plan.id === 'free'">
+          <button class="matrix-btn matrix-btn-current" disabled>{{ plan.cta }}</button>
+          <strong>{{ displayPrice(plan) }}</strong>
+        </template>
+        <template v-else>
+          <button class="matrix-btn" :class="{ 'matrix-btn-popular': plan.popular }" @click="openPayment(plan)">
+            {{ plan.cta }}
+          </button>
+          <span class="matrix-trial">{{ t.premium.freeMonth }}</span>
+          <strong>{{ displayPrice(plan) }}<span>{{ displayPeriod }}</span></strong>
+        </template>
+      </div>
     </div>
   </div>
 
@@ -415,6 +435,257 @@ const submitPayment = () => {
   max-width: 600px; margin: 0 auto; line-height: 1.6;
 }
 
+.official-title-card {
+  max-width: 1020px;
+  margin: 0 auto 26px;
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  align-items: center;
+  gap: 24px;
+  padding: 26px 28px;
+  background: linear-gradient(135deg, var(--amber), var(--amber-l));
+  color: var(--btn-ink);
+  border-radius: 8px;
+}
+.official-title-art {
+  position: relative;
+  width: 112px;
+  height: 86px;
+}
+.title-cloud {
+  position: absolute;
+  inset: 15px 10px 10px 6px;
+  background:
+    radial-gradient(circle at 25% 55%, var(--btn-ink) 0 24px, transparent 25px),
+    radial-gradient(circle at 52% 35%, var(--btn-ink) 0 30px, transparent 31px),
+    radial-gradient(circle at 78% 56%, var(--btn-ink) 0 24px, transparent 25px);
+}
+.title-fmjd {
+  position: absolute;
+  left: 39px;
+  bottom: 8px;
+  background: var(--btn-ink);
+  color: var(--amber-l);
+  border-radius: 2px;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+.official-title-kicker {
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  opacity: 0.68;
+  margin-bottom: 4px;
+}
+.official-title-copy h2 {
+  font-size: 2.1rem;
+  line-height: 1;
+  font-weight: 950;
+  margin-bottom: 8px;
+}
+.official-title-copy p:last-child {
+  max-width: 610px;
+  font-size: 0.94rem;
+  line-height: 1.42;
+  opacity: 0.78;
+}
+.official-title-btn {
+  background: var(--btn-ink);
+  color: var(--paper);
+  border: 0;
+  border-radius: 4px;
+  padding: 15px 30px;
+  font-weight: 950;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.matrix-title-row {
+  max-width: 1180px;
+  margin: 0 auto 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 18px;
+}
+.matrix-title-row h2 {
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+.matrix-title-row span {
+  color: var(--green);
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+.subscription-matrix {
+  max-width: 1180px;
+  margin: 0 auto 22px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: visible;
+  background: var(--ink2);
+}
+.matrix-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.15fr) repeat(4, minmax(150px, 1fr));
+}
+.matrix-head {
+  background: var(--ink1);
+}
+.matrix-feature-head,
+.matrix-plan-head {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  font-weight: 900;
+}
+.matrix-feature-head {
+  justify-content: flex-start;
+  background: var(--ink3);
+  text-transform: uppercase;
+}
+.matrix-plan-head {
+  position: relative;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 1px solid var(--border);
+}
+.matrix-plan-icon {
+  font-size: 1.45rem;
+  line-height: 1;
+}
+.matrix-plan-name {
+  font-size: 1rem;
+  font-weight: 900;
+}
+.matrix-badge {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--amber);
+  color: var(--btn-ink);
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.matrix-row:nth-child(odd) {
+  background: color-mix(in oklch, var(--ink3), transparent 58%);
+}
+.matrix-feature,
+.matrix-value {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  padding: 11px 16px;
+  border-top: 1px solid var(--border);
+}
+.matrix-feature {
+  gap: 12px;
+  font-weight: 800;
+  color: var(--text1);
+}
+.matrix-feature-icon {
+  width: 34px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: var(--ink4);
+  color: var(--amber);
+  font-size: 0.68rem;
+  font-weight: 950;
+}
+.matrix-value {
+  justify-content: center;
+  text-align: center;
+  border-left: 1px solid var(--border);
+  color: var(--amber);
+  font-weight: 850;
+}
+.check-dot {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--blue);
+  color: var(--paper);
+  font-weight: 950;
+}
+.cross-dot {
+  color: var(--text3);
+  font-size: 1.7rem;
+  line-height: 1;
+}
+.matrix-popular {
+  background: color-mix(in oklch, var(--blue), transparent 88%);
+  box-shadow: inset 2px 0 0 var(--blue), inset -2px 0 0 var(--blue);
+}
+.matrix-price-row {
+  border-top: 1px solid var(--border);
+}
+.matrix-price-note,
+.matrix-price {
+  min-height: 112px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+.matrix-price-note {
+  color: var(--text2);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+.matrix-price {
+  border-left: 1px solid var(--border);
+  align-items: center;
+  text-align: center;
+}
+.matrix-btn {
+  width: 100%;
+  min-height: 42px;
+  border: 0;
+  border-radius: 7px;
+  background: linear-gradient(180deg, var(--ink4), var(--ink3));
+  color: var(--text0);
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+.matrix-btn-popular {
+  background: var(--blue);
+  color: var(--paper);
+}
+.matrix-btn-current {
+  opacity: 0.55;
+}
+.matrix-trial {
+  color: var(--green);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.matrix-price strong {
+  color: var(--text0);
+  font-size: 1.05rem;
+}
+.matrix-price strong span {
+  color: var(--text2);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
 /* Payment modal */
 .pay-overlay {
   position: fixed; inset: 0;
@@ -511,5 +782,26 @@ const submitPayment = () => {
   background: var(--amber); color: var(--btn-ink); border: none;
   border-radius: 8px; padding: 10px 28px; font-size: 0.9rem;
   font-weight: 800; cursor: pointer; font-family: inherit;
+}
+
+@media (max-width: 980px) {
+  .official-title-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+    justify-items: center;
+  }
+
+  .matrix-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .subscription-matrix {
+    overflow-x: auto;
+  }
+
+  .matrix-grid {
+    min-width: 860px;
+  }
 }
 </style>
