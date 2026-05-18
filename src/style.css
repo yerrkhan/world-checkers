@@ -1544,3 +1544,199 @@ html body #app .price-per {
     font-size: 1.08rem;
   }
 }
+
+/* Arena composition and light-theme repair */
+html body #app .hero {
+  min-height: 540px;
+  padding: 86px 32px 72px;
+}
+
+html body #app .hero::after {
+  top: 126px;
+  left: max(36px, calc(50% - 630px));
+  width: 128px;
+  height: 128px;
+}
+
+html body #app .hero-inner {
+  max-width: 1160px;
+  margin-inline: auto;
+  padding-left: 160px;
+  grid-template-columns: minmax(320px, 390px) minmax(420px, 1fr);
+  align-items: center;
+  gap: 58px;
+}
+
+html body #app .hero-title {
+  font-size: 4rem;
+  margin-bottom: 22px;
+}
+
+html body #app .hero-sub {
+  max-width: 360px;
+}
+
+html body #app .stat-row {
+  justify-self: stretch;
+  align-self: center;
+  max-width: 600px;
+  background: oklch(7% 0.012 132);
+  border: 1px solid oklch(18% 0.012 132);
+  padding: 30px 34px;
+  gap: 22px;
+}
+
+html body #app .stat-n {
+  font-size: 4.15rem;
+}
+
+html body #app .stat-l {
+  color: var(--text1);
+  font-size: 0.92rem;
+}
+
+html.light-mode {
+  --ink: oklch(91% 0.024 84);
+  --ink1: oklch(96% 0.015 84);
+  --ink2: oklch(88% 0.026 84);
+  --ink3: oklch(82% 0.029 86);
+  --ink4: oklch(72% 0.033 88);
+  --panel: oklch(98% 0.012 84);
+  --panel-soft: oklch(93% 0.02 84);
+  --paper: oklch(18% 0.018 84);
+  --text0: oklch(19% 0.018 84);
+  --text1: oklch(30% 0.02 84);
+  --text2: oklch(44% 0.022 84);
+  --text3: oklch(56% 0.022 84);
+  --border: oklch(72% 0.025 84);
+  --border2: oklch(62% 0.034 84);
+  --amber: oklch(50% 0.116 76);
+  --amber-l: oklch(58% 0.122 78);
+  --green: oklch(45% 0.13 148);
+  --red: oklch(53% 0.17 30);
+  --btn-ink: oklch(97% 0.012 84);
+}
+
+html.light-mode,
+html.light-mode body,
+html.light-mode #app {
+  background: var(--ink);
+  color: var(--text0);
+}
+
+html.light-mode body {
+  background:
+    linear-gradient(180deg, var(--ink1) 0%, var(--ink) 430px),
+    var(--ink);
+}
+
+html.light-mode body #app .topnav {
+  background: var(--ink1);
+  border-bottom-color: var(--border2);
+  box-shadow: 0 1px 0 var(--border2);
+}
+
+html.light-mode body #app .nav-brand,
+html.light-mode body #app .nav-link,
+html.light-mode body #app .arena-icon {
+  color: var(--text0);
+}
+
+html.light-mode body #app .nav-link:hover,
+html.light-mode body #app .nav-link-active {
+  background: oklch(89% 0.025 84);
+  color: var(--text0) !important;
+}
+
+html.light-mode body #app .btn-upgrade-pro {
+  background: var(--ink1);
+  color: var(--amber);
+}
+
+html.light-mode body #app .arena-board {
+  background:
+    linear-gradient(45deg, var(--text0) 25%, transparent 25% 75%, var(--text0) 75%),
+    linear-gradient(45deg, var(--text0) 25%, transparent 25% 75%, var(--text0) 75%);
+  background-position: 0 0, 4px 4px;
+  background-size: 8px 8px;
+}
+
+html.light-mode body #app .home,
+html.light-mode body #app .page,
+html.light-mode body #app .puzzles-page,
+html.light-mode body #app .lb-page,
+html.light-mode body #app .tourn-page,
+html.light-mode body #app .premium-page,
+html.light-mode body #app .section,
+html.light-mode body #app .section-alt,
+html.light-mode body #app .section-upgrade,
+html.light-mode body #app .hero {
+  background: var(--ink);
+  color: var(--text0);
+}
+
+html.light-mode body #app .hero::after {
+  opacity: 0.26;
+}
+
+html.light-mode body #app .eyebrow,
+html.light-mode body #app .sec-label,
+html.light-mode body #app .upgrade-eyebrow {
+  color: var(--amber);
+}
+
+html.light-mode body #app .hero-title,
+html.light-mode body #app .hero-em,
+html.light-mode body #app .hero-sub,
+html.light-mode body #app .page-title,
+html.light-mode body #app .lb-title,
+html.light-mode body #app .rank-name,
+html.light-mode body #app .rank-rating {
+  color: var(--text0);
+}
+
+html.light-mode body #app .stat-row {
+  background: oklch(96% 0.014 84);
+  border-color: var(--border2);
+  box-shadow: 0 12px 28px oklch(42% 0.025 84 / 0.16);
+}
+
+html.light-mode body #app .stat-n {
+  color: var(--text0);
+}
+
+html.light-mode body #app .stat-l {
+  color: var(--text2);
+}
+
+html.light-mode body #app .game-card,
+html.light-mode body #app .price-card,
+html.light-mode body #app .plan-card,
+html.light-mode body #app .puzzle-card,
+html.light-mode body #app .t-card {
+  background: var(--panel);
+  border-color: var(--border);
+  color: var(--text0);
+}
+
+html.light-mode body #app .btn-hero-ghost,
+html.light-mode body #app .btn-ghost,
+html.light-mode body #app .price-btn {
+  color: var(--text0);
+  border-color: var(--border2);
+}
+
+@media (max-width: 980px) {
+  html body #app .hero {
+    padding: 62px 22px 44px;
+  }
+
+  html body #app .hero-inner {
+    padding-left: 105px;
+    grid-template-columns: 1fr;
+  }
+
+  html body #app .stat-row {
+    max-width: 100%;
+  }
+}

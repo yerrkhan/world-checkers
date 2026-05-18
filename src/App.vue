@@ -76,6 +76,28 @@ onMounted(async () => {
           <span>{{ t.nav.upgradePro }}</span>
           <span class="try-free-tag">{{ t.nav.tryFree }}</span>
         </RouterLink>
+        <div class="arena-actions" aria-label="Arena shortcuts">
+          <RouterLink to="/play" class="arena-icon arena-board" title="Arena board"/>
+          <button class="arena-icon" @click="toggleTheme" :title="lightMode ? t.nav.darkMode : t.nav.lightMode">
+            <svg v-if="lightMode" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="5" width="14" height="14" rx="2"/><path d="M8 16 16 8"/>
+            </svg>
+          </button>
+          <button class="arena-icon" @click="notifOpen=!notifOpen" :title="t.nav.notifications">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+          </button>
+          <RouterLink to="/leaderboard" class="arena-icon arena-title-icon" title="Titles">
+            <span class="title-zero">0</span>
+          </RouterLink>
+          <RouterLink :to="user ? '/profile' : '/register'" class="arena-avatar" :title="user ? t.nav.myProfile : t.nav.register">
+            <span>{{ user ? (user.email||'U')[0].toUpperCase() : 'M' }}</span>
+          </RouterLink>
+        </div>
         <!-- Language slider -->
         <div class="lang-sw">
           <span class="ls-lbl" :class="{ 'ls-on': lang === 'en' }" @click="setLang('en')">EN</span>
@@ -86,20 +108,6 @@ onMounted(async () => {
         </div>
         <div class="nav-sep"/>
         <template v-if="user">
-          <button class="nav-icon-btn" @click="notifOpen=!notifOpen" :title="t.nav.notifications">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-          </button>
-          <button class="nav-icon-btn" @click="toggleTheme" :title="lightMode ? t.nav.darkMode : t.nav.lightMode">
-            <svg v-if="lightMode" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-            </svg>
-            <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-            </svg>
-          </button>
-          <div class="nav-sep"/>
           <RouterLink to="/profile" class="user-chip">
             <span class="user-ava">{{ (user.email||'U')[0].toUpperCase() }}</span>
             <span class="user-name">{{ user.email?.split('@')[0] }}</span>
@@ -107,15 +115,6 @@ onMounted(async () => {
           <button @click="logout" class="btn-ghost">{{ t.nav.signOut }}</button>
         </template>
         <template v-else>
-          <button class="nav-icon-btn" @click="toggleTheme" :title="lightMode ? t.nav.darkMode : t.nav.lightMode">
-            <svg v-if="lightMode" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-            </svg>
-            <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-            </svg>
-          </button>
-          <div class="nav-sep"/>
           <RouterLink to="/play" class="btn-play">{{ t.nav.lobby }}</RouterLink>
           <RouterLink to="/login" class="btn-ghost">{{ t.nav.login }}</RouterLink>
           <RouterLink to="/register" class="btn-register">{{ t.nav.register }}</RouterLink>
@@ -379,6 +378,85 @@ onMounted(async () => {
   font-size: 0.66rem;
   font-weight: 900;
   line-height: 1;
+}
+
+.arena-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 4px;
+}
+.arena-icon,
+.arena-avatar {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text0);
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  padding: 0;
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s, transform 0.15s;
+}
+.arena-icon:hover,
+.arena-avatar:hover {
+  color: var(--amber-l);
+  background: oklch(96% 0.01 92 / 0.08);
+}
+.arena-board {
+  background:
+    linear-gradient(45deg, var(--paper) 25%, transparent 25% 75%, var(--paper) 75%),
+    linear-gradient(45deg, var(--paper) 25%, transparent 25% 75%, var(--paper) 75%);
+  background-position: 0 0, 4px 4px;
+  background-size: 8px 8px;
+  border-radius: 2px;
+}
+.arena-board:hover {
+  transform: translateY(-1px);
+}
+.arena-title-icon {
+  position: relative;
+  width: 36px;
+}
+.arena-title-icon::before,
+.arena-title-icon::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-top: 0;
+  transform: skewY(-23deg);
+}
+.arena-title-icon::before {
+  left: 3px;
+  bottom: 4px;
+}
+.arena-title-icon::after {
+  right: 3px;
+  bottom: 4px;
+  transform: skewY(23deg);
+}
+.title-zero {
+  position: relative;
+  top: -6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.arena-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid oklch(46% 0.14 292);
+  background:
+    radial-gradient(circle at 70% 25%, oklch(66% 0.16 329), transparent 22%),
+    linear-gradient(135deg, oklch(25% 0.12 273), oklch(43% 0.13 302));
+  color: var(--paper);
+  font-weight: 900;
+  box-shadow: inset 0 0 0 2px oklch(8% 0.02 132 / 0.45);
 }
 
 .btn-ghost {
