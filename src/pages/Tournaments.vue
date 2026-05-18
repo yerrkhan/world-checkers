@@ -55,9 +55,9 @@ const allT = [
 ]
 
 /* ── Layout constants ─────────────────────────── */
-const PX_PER_HOUR   = 220   // pixels per hour on the timeline
-const TIMELINE_START = 17.5  // 17:30
-const TIMELINE_END   = 24    // 00:00
+const PX_PER_HOUR   = 240   // pixels per hour on the timeline
+const TIMELINE_START = 15.5  // 15:30
+const TIMELINE_END   = 21.5  // 21:30
 
 const timeToX = (h) => (h - TIMELINE_START) * PX_PER_HOUR
 const totalW  = computed(() => (TIMELINE_END - TIMELINE_START) * PX_PER_HOUR + 120)
@@ -76,7 +76,7 @@ const timeLabels = computed(() => {
 // Current time marker
 const nowX = computed(() => {
   const h = now.value.getHours() + now.value.getMinutes() / 60
-  return timeToX(h)
+  return Math.max(0, Math.min(timeToX(h), totalW.value - 120))
 })
 const nowLabel = computed(() => {
   const h = now.value.getHours()
@@ -122,6 +122,7 @@ const getBg = (t) => {
   return `linear-gradient(90deg, ${tone}, ${tone})`
 }
 const getBorder = (t) => typeColor[t.type] || '#444'
+const typeClass = (type) => `bar-kind-${type.toLowerCase()}`
 
 /* ── Tooltip ──────────────────────────────────── */
 const tooltip = ref(null)
@@ -211,7 +212,7 @@ const today = computed(() => {
             v-for="t in row"
             :key="t.id"
             class="tl-bar"
-            :class="['status-'+getTStatus(t)]"
+            :class="['status-'+getTStatus(t), typeClass(t.type)]"
             :style="{
               left:  timeToX(t.start) + 'px',
               width: (t.dur / 60 * PX_PER_HOUR) + 'px',
@@ -261,16 +262,17 @@ const today = computed(() => {
 <style scoped>
 .tourn-page { background: var(--ink); min-height:100vh; padding:44px 0 80px; color: var(--text0); }
 
-.t-header { padding:0 40px; margin-bottom:20px; }
-.t-heading { font-size:1.6rem; font-weight:800; display:flex; align-items:center; gap:10px; margin-bottom:6px; letter-spacing:-0.3px; }
-.t-trophy  { font-size:1.2rem; }
+.t-header { width:min(1100px, calc(100% - 48px)); margin:0 auto 20px; }
+.t-heading { font-size:1.72rem; font-weight:800; display:flex; align-items:center; gap:10px; margin-bottom:6px; letter-spacing:0; }
+.t-trophy  { font-size:1.2rem; color: var(--paper); }
 .t-sub     { color: var(--text2); font-size:.88rem; }
 
 /* Filters */
-.filters { padding:0 40px; display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; }
+.filters { width:min(1100px, calc(100% - 48px)); margin:0 auto 34px; display:flex; gap:12px; flex-wrap:wrap; }
 .f-select {
   background: var(--ink2); border:1px solid var(--border2); color: var(--text1);
-  padding:7px 12px; border-radius:5px; font-size:.82rem;
+  min-width: 164px;
+  padding:7px 12px; border-radius:4px; font-size:.82rem;
   cursor:pointer; outline:none; transition:border-color .15s;
   font-family:inherit;
 }
@@ -278,13 +280,18 @@ const today = computed(() => {
 .f-select:focus { border-color: var(--amber); }
 .f-date {
   background: var(--ink2); border:1px solid var(--border); color: var(--text2);
-  padding:7px 12px; border-radius:5px; font-size:.82rem;
+  padding:7px 12px; border-radius:4px; font-size:.82rem;
 }
 
 /* Timeline container */
 .tl-outer {
   overflow-x: auto;
-  padding: 0 40px;
+  padding: 0;
+  border-top: 1px solid oklch(15% 0.01 132);
+  border-bottom: 1px solid oklch(15% 0.01 132);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 39px, color-mix(in oklch, var(--arena-grid), transparent 28%) 40px 41px),
+    var(--ink);
   scrollbar-width: thin;
   scrollbar-color: var(--ink4) transparent;
 }
@@ -292,26 +299,22 @@ const today = computed(() => {
 .tl-outer::-webkit-scrollbar-track { background: transparent; }
 .tl-outer::-webkit-scrollbar-thumb { background: var(--ink4); border-radius: 2px; }
 
-.tl-inner { position: relative; min-height: 400px; }
+.tl-inner { position: relative; min-height: 690px; }
 
 /* Time axis */
-.tl-axis { position: relative; height: 32px; margin-bottom: 4px; }
+.tl-axis { position: relative; height: 34px; margin-bottom: 0; }
 .tl-tick {
   position: absolute;
   transform: translateX(-50%);
   font-size: .7rem;
-  color: var(--text3);
+  color: oklch(45% 0.01 92);
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   white-space: nowrap;
 }
 
 /* Axis horizontal line */
-.tl-line {
-  height: 1px;
-  background: var(--border);
-  margin-bottom: 12px;
-}
+.tl-line { display: none; }
 
 /* Current time marker */
 .tl-now {
@@ -356,7 +359,7 @@ const today = computed(() => {
 
 /* Rows */
 .tl-rows { position: relative; padding-top: 4px; }
-.tl-row  { position: relative; height: 74px; margin-bottom: 6px; }
+.tl-row  { position: relative; height: 74px; margin-bottom: 4px; }
 
 /* Tournament bars */
 .tl-bar {
@@ -364,28 +367,76 @@ const today = computed(() => {
   top: 4px;
   height: 64px;
   min-width: 80px;
-  border: 1px solid var(--border2);
-  border-left-width: 1px;
-  border-radius: 0 10px 10px 0;
-  padding: 6px 10px;
+  border: 0;
+  border-radius: 0;
+  padding: 8px 13px;
   cursor: pointer;
   transition: filter .15s, transform .15s;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   gap: 3px;
   box-sizing: border-box;
+  color: var(--btn-ink);
+  background: var(--arena-brown) !important;
+  clip-path: none;
 }
 .tl-bar:hover {
   filter: brightness(1.3);
   transform: translateY(-1px);
   z-index: 10;
 }
-.status-done { opacity: .4; }
-.status-live  { filter: brightness(1.1); }
+.status-done,
+.status-live,
+.status-upcoming { opacity: .92; }
+.status-live  { filter: brightness(1.08); }
 
 .bar-head { display: flex; align-items: center; gap: 4px; }
-.bar-type-icon { font-size: .7rem; line-height: 1; }
+.bar-type-icon {
+  width: 18px;
+  height: 14px;
+  position: relative;
+  flex: 0 0 18px;
+  font-size: 0;
+}
+.bar-type-icon::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 4px;
+  width: 9px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.bar-kind-bullet .bar-type-icon {
+  color: var(--red);
+}
+.bar-kind-bullet .bar-type-icon::after {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 4px;
+  width: 8px;
+  height: 7px;
+  background: currentColor;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+.bar-kind-blitz .bar-type-icon {
+  color: var(--amber);
+}
+.bar-kind-blitz .bar-type-icon::before {
+  border-radius: 2px 50% 50% 50%;
+  transform: rotate(45deg);
+}
+.bar-kind-rapid .bar-type-icon {
+  color: var(--blue);
+}
+.bar-kind-rapid .bar-type-icon::before {
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px currentColor;
+  background: transparent;
+}
 .bar-type { font-size: .6rem; font-weight: 800; letter-spacing: .5px; }
 .bar-live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); animation: blink 1s infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
@@ -393,7 +444,7 @@ const today = computed(() => {
 .bar-name {
   font-size: .75rem;
   font-weight: 700;
-  color: var(--text0);
+  color: var(--btn-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -402,21 +453,43 @@ const today = computed(() => {
   display: flex;
   gap: 6px;
   font-size: .65rem;
-  color: var(--text3);
+  color: color-mix(in oklch, var(--btn-ink), transparent 26%);
   align-items: center;
+}
+.bar-meta span:nth-child(2) {
+  font-size: 0;
+}
+.bar-meta span:nth-child(2)::before {
+  content: "•";
+  font-size: .75rem;
 }
 
 /* Right rounded cap (makes bars look like Lichess pills) */
 .bar-cap {
+  display: none;
+}
+.tl-bar::before {
+  content: "";
   position: absolute;
-  right: -12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 24px;
-  height: 44px;
-  border-radius: 50%;
+  left: -34px;
+  top: 21px;
+  width: 28px;
+  height: 19px;
+  background:
+    linear-gradient(var(--arena-brown-light), var(--arena-brown-light)) 0 2px / 27px 2px no-repeat,
+    linear-gradient(var(--arena-brown-light), var(--arena-brown-light)) 7px 9px / 20px 2px no-repeat,
+    linear-gradient(var(--arena-brown-light), var(--arena-brown-light)) 0 16px / 27px 2px no-repeat;
+  opacity: .9;
+}
+.tl-bar::after {
+  content: "";
+  position: absolute;
+  right: -27px;
+  top: 0;
+  width: 28px;
+  height: 100%;
   background: inherit;
-  border: 1px solid inherit;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
 }
 
 /* Tooltip */

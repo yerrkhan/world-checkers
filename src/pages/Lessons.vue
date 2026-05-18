@@ -60,6 +60,61 @@ const lessonsEN = [
       { heading: 'Timing Promotion', text: 'In the endgame, race your piece to promotion while blocking opponent\'s advance.' },
     ],
   },
+  {
+    id: 6, title: 'The Strong Center',
+    duration: '6 min', category: 'Strategy',
+    description: 'Build a compact center that gives your pieces more routes and keeps your opponent short on space.',
+    content: [
+      { heading: 'Central Squares Matter', text: 'A piece in the center usually controls more playable diagonals than a piece near the side.' },
+      { heading: 'Do Not Overextend', text: 'A big center is only strong when the pieces defend each other. Unsupported advanced pieces become targets.' },
+      { heading: 'Trade From Strength', text: 'When you own the center, exchanges often leave your remaining pieces with better squares.' },
+      { heading: 'When to Release', text: 'If the center becomes blocked, open one diagonal before your opponent can freeze your formation.' },
+    ],
+  },
+  {
+    id: 7, title: 'Tempo and Waiting Moves',
+    duration: '5 min', category: 'Strategy',
+    description: 'Learn when a quiet move changes the move order and forces your opponent to break their own position.',
+    content: [
+      { heading: 'What Tempo Means', text: 'Tempo is the right to move at the right moment. Sometimes the best move simply hands the problem back.' },
+      { heading: 'Useful Waiting', text: 'A waiting move keeps your threats alive while forcing the opponent to choose a weakness.' },
+      { heading: 'Avoid Empty Waiting', text: 'Do not pass time without a purpose. Your waiting move should improve defense, control, or promotion chances.' },
+      { heading: 'Endgame Value', text: 'Tempo is most visible in king endings, where one move can decide who controls the final diagonal.' },
+    ],
+  },
+  {
+    id: 8, title: 'Traps on the Edge',
+    duration: '7 min', category: 'Tactics',
+    description: 'Use the side of the board to reduce escape squares and create forcing capture patterns.',
+    content: [
+      { heading: 'Why Edges Trap Pieces', text: 'A piece on the edge has fewer legal diagonals, so one defender can often control several escape routes.' },
+      { heading: 'Push, Then Block', text: 'First guide the enemy piece toward the side, then place a blocker where it wants to run.' },
+      { heading: 'Forced Capture Hooks', text: 'Offer a piece that must be taken, then recapture into a stronger square or into a multi-capture route.' },
+      { heading: 'Do Not Trap Yourself', text: 'Edge pressure is useful only if your own pieces keep enough space to retreat.' },
+    ],
+  },
+  {
+    id: 9, title: 'Reading Multi-Captures',
+    duration: '9 min', category: 'Tactics',
+    description: 'Train your eye to calculate long capture sequences without losing track of the landing square.',
+    content: [
+      { heading: 'Start With Landing Squares', text: 'Before counting captured pieces, identify where each jump ends. The final landing square often matters most.' },
+      { heading: 'Branch Points', text: 'When several captures are available, compare the final position, not only the number of pieces taken.' },
+      { heading: 'Remove Pieces Mentally', text: 'After each jump, imagine the captured piece gone. New diagonals may open that were hidden at first.' },
+      { heading: 'Check the Reply', text: 'A brilliant capture is bad if the opponent immediately wins your king or starts a stronger chain.' },
+    ],
+  },
+  {
+    id: 10, title: 'King vs Pieces Technique',
+    duration: '8 min', category: 'Advanced',
+    description: 'Use one king actively against regular pieces without letting them promote for free.',
+    content: [
+      { heading: 'Stay on Long Diagonals', text: 'A king controls the board best from long diagonals where it can switch sides quickly.' },
+      { heading: 'Cut the Promotion Route', text: 'Do not chase every piece. First control the path to promotion, then collect targets.' },
+      { heading: 'Force Separation', text: 'Regular pieces defend each other in groups. Use the king to make one piece move away from the rest.' },
+      { heading: 'Convert Calmly', text: 'When ahead, choose simple moves that keep control. Fast captures are less important than stopping counterplay.' },
+    ],
+  },
 ]
 
 const lessonsRU = [
@@ -116,6 +171,61 @@ const lessonsRU = [
       { heading: 'Оппозиция', text: 'Поставьте свою дамку прямо перед дамкой соперника, чтобы ограничить её движение.' },
       { heading: 'Не спешите', text: 'Медленное методичное наступление несколькими шашками надёжно ведёт к победе.' },
       { heading: 'Время для дамки', text: 'В эндшпиле гоните шашку в дамки, одновременно блокируя прорыв соперника.' },
+    ],
+  },
+  {
+    id: 6, title: 'Сильный центр',
+    duration: '6 мин', category: 'Стратегия',
+    description: 'Стройте плотный центр, чтобы получать больше маршрутов и ограничивать пространство соперника.',
+    content: [
+      { heading: 'Центральные поля важны', text: 'Шашка в центре обычно контролирует больше игровых диагоналей, чем шашка на краю.' },
+      { heading: 'Не уходите слишком далеко', text: 'Центр силен только тогда, когда шашки защищают друг друга. Одинокая продвинутая шашка становится целью.' },
+      { heading: 'Меняйтесь из силы', text: 'Когда центр ваш, размены часто оставляют вашим шашкам лучшие поля.' },
+      { heading: 'Когда вскрывать игру', text: 'Если центр заблокирован, откройте одну диагональ до того, как соперник заморозит построение.' },
+    ],
+  },
+  {
+    id: 7, title: 'Темп и выжидательные ходы',
+    duration: '5 мин', category: 'Стратегия',
+    description: 'Поймите, когда тихий ход меняет очередь и заставляет соперника портить свою позицию.',
+    content: [
+      { heading: 'Что такое темп', text: 'Темп это право сделать ход в нужный момент. Иногда лучший ход просто возвращает проблему сопернику.' },
+      { heading: 'Полезное ожидание', text: 'Выжидательный ход сохраняет угрозы и заставляет соперника выбрать слабость.' },
+      { heading: 'Не ждите без причины', text: 'Тихий ход должен улучшать защиту, контроль или шансы на проход в дамки.' },
+      { heading: 'Ценность в эндшпиле', text: 'Темп особенно важен в дамочных окончаниях, где один ход решает контроль главной диагонали.' },
+    ],
+  },
+  {
+    id: 8, title: 'Ловушки на краю',
+    duration: '7 мин', category: 'Тактика',
+    description: 'Используйте край доски, чтобы уменьшить число ходов соперника и создать форсированные взятия.',
+    content: [
+      { heading: 'Почему край опасен', text: 'У шашки на краю меньше диагоналей, поэтому один защитник часто перекрывает несколько путей.' },
+      { heading: 'Сначала вытесните, потом блокируйте', text: 'Направьте шашку соперника к краю, затем поставьте блок на поле ухода.' },
+      { heading: 'Приманка под обязательное взятие', text: 'Отдайте шашку, которую соперник обязан взять, и получите ответное взятие или цепочку.' },
+      { heading: 'Не поймайте себя', text: 'Давление на краю полезно только если ваши шашки сохраняют пространство для отхода.' },
+    ],
+  },
+  {
+    id: 9, title: 'Расчет серийных взятий',
+    duration: '9 мин', category: 'Тактика',
+    description: 'Тренируйте расчет длинных цепочек взятий и не теряйте из виду конечное поле.',
+    content: [
+      { heading: 'Начинайте с полей приземления', text: 'Перед подсчетом взятых шашек определите, где заканчивается каждый прыжок.' },
+      { heading: 'Точки выбора', text: 'Если есть несколько взятий, сравнивайте итоговую позицию, а не только количество взятых шашек.' },
+      { heading: 'Убирайте шашки мысленно', text: 'После каждого прыжка представляйте, что взятая шашка исчезла. Могут открыться новые диагонали.' },
+      { heading: 'Проверьте ответ', text: 'Красивое взятие плохо, если соперник сразу выигрывает вашу дамку или начинает более сильную цепочку.' },
+    ],
+  },
+  {
+    id: 10, title: 'Дамка против простых',
+    duration: '8 мин', category: 'Продвинутый',
+    description: 'Активно играйте дамкой против простых шашек и не позволяйте им пройти в дамки бесплатно.',
+    content: [
+      { heading: 'Держитесь длинных диагоналей', text: 'Дамка лучше всего контролирует доску с длинных диагоналей, где быстро меняет фланг.' },
+      { heading: 'Отрежьте путь в дамки', text: 'Не гонитесь за каждой шашкой. Сначала перекройте дорогу к превращению, затем собирайте цели.' },
+      { heading: 'Разъединяйте группу', text: 'Простые шашки сильны вместе. Дамкой заставьте одну шашку отойти от остальных.' },
+      { heading: 'Реализуйте спокойно', text: 'При преимуществе выбирайте простые ходы, сохраняющие контроль. Остановить контригру важнее быстрой добычи.' },
     ],
   },
 ]

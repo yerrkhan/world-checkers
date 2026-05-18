@@ -96,6 +96,19 @@ const totalAmount = computed(() => {
   return `${selectedPlan.value.monthlyPrice.toLocaleString()} KZT`
 })
 
+const billingSummary = computed(() => {
+  if (billingCycle.value === 'yearly') {
+    return {
+      label: t.value.premium.yearly,
+      detail: t.value.premium.yearlySelected,
+    }
+  }
+  return {
+    label: t.value.premium.monthly,
+    detail: t.value.premium.monthlySelected,
+  }
+})
+
 const openPayment = (plan) => {
   if (plan.id === 'free' || plan.current) return
   selectedPlan.value = plan
@@ -132,12 +145,18 @@ const submitPayment = () => {
     <!-- Billing toggle -->
     <div class="billing-toggle">
       <button :class="['tog-btn', billingCycle==='monthly' && 'tog-active']" @click="billingCycle='monthly'">
+        <span v-if="billingCycle==='monthly'" class="tog-check">✓</span>
         {{ t.premium.monthly }}
       </button>
       <button :class="['tog-btn', billingCycle==='yearly' && 'tog-active']" @click="billingCycle='yearly'">
+        <span v-if="billingCycle==='yearly'" class="tog-check">✓</span>
         {{ t.premium.yearly }}
         <span class="save-chip">{{ t.premium.save }}</span>
       </button>
+    </div>
+    <div class="billing-selected">
+      <strong>{{ billingSummary.label }}</strong>
+      <span>{{ billingSummary.detail }}</span>
     </div>
     <p class="trial-note">{{ t.premium.trialNote }}</p>
   </div>
@@ -310,6 +329,25 @@ const submitPayment = () => {
   background: var(--ink2); border: 1px solid var(--border);
   border-radius: 8px; padding: 3px;
 }
+.billing-selected {
+  width: min(440px, 100%);
+  margin: 12px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border: 1px solid color-mix(in oklch, var(--green), transparent 45%);
+  border-radius: 7px;
+  background: color-mix(in oklch, var(--green), transparent 88%);
+  color: var(--text1);
+  font-size: 0.82rem;
+}
+.billing-selected strong {
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
 .trial-note {
   color: var(--text1);
   font-size: 0.86rem;
@@ -322,13 +360,30 @@ const submitPayment = () => {
   display: flex; align-items: center; gap: 6px; font-family: inherit;
 }
 .tog-active {
-  background: var(--ink3); color: var(--text0);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  background: var(--green);
+  color: var(--btn-ink);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--green), transparent 30%), 0 6px 20px color-mix(in oklch, var(--green), transparent 80%);
+}
+.tog-check {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--btn-ink);
+  color: var(--green);
+  font-size: 0.68rem;
+  font-weight: 950;
 }
 .save-chip {
   background: rgba(76,175,80,0.15); color: #4caf50;
   border-radius: 4px; padding: 1px 6px;
   font-size: 0.7rem; font-weight: 800;
+}
+.tog-active .save-chip {
+  background: var(--btn-ink);
+  color: var(--green);
 }
 
 /* Plans grid */

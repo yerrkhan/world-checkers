@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { ensureUserProfile, supabase } from './supabase.js'
 import { useI18n } from './i18n.js'
@@ -12,7 +12,9 @@ const mobileOpen = ref(false)
 const lightMode = ref(localStorage.getItem('wc_theme') === 'light')
 const notifOpen = ref(false)
 const titlePopupOpen = ref(localStorage.getItem('wc_title_popup_closed') !== '1')
-const showTitlePopup = computed(() => titlePopupOpen.value && route.path === '/')
+const titlePopupReady = ref(false)
+const showTitlePopup = computed(() => titlePopupReady.value && titlePopupOpen.value && route.path === '/')
+let titlePopupTimer = null
 
 const toggleTheme = () => {
   lightMode.value = !lightMode.value
@@ -41,6 +43,11 @@ const closeTitlePopup = () => {
 
 onMounted(async () => {
   if (lightMode.value) document.documentElement.classList.add('light-mode')
+  if (titlePopupOpen.value) {
+    titlePopupTimer = setTimeout(() => {
+      titlePopupReady.value = true
+    }, 30000)
+  }
   const saved = localStorage.getItem('wc_user')
   if (saved) user.value = JSON.parse(saved)
   const { data: { session } } = await supabase.auth.getSession()
@@ -56,6 +63,10 @@ onMounted(async () => {
     }
     else localStorage.removeItem('wc_user')
   })
+})
+
+onUnmounted(() => {
+  if (titlePopupTimer) clearTimeout(titlePopupTimer)
 })
 </script>
 
