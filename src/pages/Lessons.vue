@@ -115,6 +115,61 @@ const lessonsEN = [
       { heading: 'Convert Calmly', text: 'When ahead, choose simple moves that keep control. Fast captures are less important than stopping counterplay.' },
     ],
   },
+  {
+    id: 11, title: 'The Back Rank Guard',
+    duration: '6 min', category: 'Strategy',
+    description: 'Keep control of the promotion row without freezing your whole army.',
+    content: [
+      { heading: 'Why the Back Rank Matters', text: 'The last row is the door to kings. A single careless move can give the opponent a permanent advantage.' },
+      { heading: 'Keep One Guard', text: 'You do not need to keep every back piece still. Usually one well-placed guard is enough to stop easy promotion.' },
+      { heading: 'Release at the Right Time', text: 'When the center opens, move a back-rank piece only if it joins a threat or prevents a stronger threat.' },
+      { heading: 'Avoid Passive Defense', text: 'A guard should support your position. If it only waits while the opponent improves, it becomes a weakness.' },
+    ],
+  },
+  {
+    id: 12, title: 'Majority Captures',
+    duration: '7 min', category: 'Tactics',
+    description: 'Understand maximum-capture rules and choose the legal sequence that wins the most material.',
+    content: [
+      { heading: 'The Rule', text: 'In International Draughts, when several captures are possible, the line taking the most pieces must be played.' },
+      { heading: 'Count Before Moving', text: 'Do not stop after seeing the first jump. Count every branch and compare the full capture length.' },
+      { heading: 'Use the Rule as a Weapon', text: 'You can force the opponent into a longer capture that leaves them on a worse square.' },
+      { heading: 'Final Square Check', text: 'The biggest capture is not always the safest, but if it is mandatory you must prepare for the final landing square.' },
+    ],
+  },
+  {
+    id: 13, title: 'Breakthrough Patterns',
+    duration: '8 min', category: 'Tactics',
+    description: 'Clear a promotion route by sacrificing, blocking, and timing the final advance.',
+    content: [
+      { heading: 'Find the Runner', text: 'Choose the piece with the clearest path to the king row, not always the most advanced piece.' },
+      { heading: 'Remove One Defender', text: 'Many breakthroughs start by trading away the defender that controls the final diagonal.' },
+      { heading: 'Force the Blocker', text: 'If the opponent must capture, you can pull their blocker away from your runner.' },
+      { heading: 'Run Only When Ready', text: 'A premature race can lose. Start the run when every reply either fails or gives you promotion.' },
+    ],
+  },
+  {
+    id: 14, title: 'Flying King Geometry',
+    duration: '9 min', category: 'Advanced',
+    description: 'Use long diagonals with kings to cut routes, switch wings, and create double threats.',
+    content: [
+      { heading: 'Long Diagonals', text: 'A flying king controls many squares at once. Long diagonals let it defend and attack without wasting moves.' },
+      { heading: 'Cut the Board', text: 'Place the king where enemy pieces cannot cross safely. This turns space into a tactical weapon.' },
+      { heading: 'Switch Wings', text: 'Kings can move from one side to the other quickly. Use that mobility to attack the side the opponent leaves loose.' },
+      { heading: 'Do Not Overchase', text: 'A king chasing one piece can abandon the main diagonal. Control first, collect later.' },
+    ],
+  },
+  {
+    id: 15, title: 'Planning Under Time Pressure',
+    duration: '5 min', category: 'Basics',
+    description: 'Make reliable decisions in bullet and blitz without calculating everything.',
+    content: [
+      { heading: 'Use Candidate Moves', text: 'Quickly list two or three sensible moves. This prevents panic clicks and obvious blunders.' },
+      { heading: 'Check Captures First', text: 'Mandatory captures decide many fast games. Always scan for captures before quiet moves.' },
+      { heading: 'Prefer Simple Advantages', text: 'In time trouble, choose the move that keeps material and structure stable unless you see a clear tactic.' },
+      { heading: 'Clock Discipline', text: 'Do not spend all your time looking for perfection. Good and fast often beats best and too late.' },
+    ],
+  },
 ]
 
 const lessonsRU = [
@@ -226,6 +281,61 @@ const lessonsRU = [
       { heading: 'Отрежьте путь в дамки', text: 'Не гонитесь за каждой шашкой. Сначала перекройте дорогу к превращению, затем собирайте цели.' },
       { heading: 'Разъединяйте группу', text: 'Простые шашки сильны вместе. Дамкой заставьте одну шашку отойти от остальных.' },
       { heading: 'Реализуйте спокойно', text: 'При преимуществе выбирайте простые ходы, сохраняющие контроль. Остановить контригру важнее быстрой добычи.' },
+    ],
+  },
+  {
+    id: 11, title: 'Back Rank Guard',
+    duration: '6 min', category: 'Strategy',
+    description: 'Keep the promotion row protected without freezing your whole position.',
+    content: [
+      { heading: 'Guard the King Row', text: 'A back-rank piece stops easy promotion and forces the opponent to work for every king.' },
+      { heading: 'One Guard Is Enough', text: 'Do not freeze four pieces forever. Keep one guard, then use the rest to fight for space.' },
+      { heading: 'Release With Purpose', text: 'Move the guard only when it joins a threat or prevents a stronger breakthrough.' },
+      { heading: 'Stay Active', text: 'Defense must still create pressure. Passive guards eventually become targets.' },
+    ],
+  },
+  {
+    id: 12, title: 'Majority Captures',
+    duration: '7 min', category: 'Tactics',
+    description: 'Practice the maximum-capture rule and learn how it shapes combinations.',
+    content: [
+      { heading: 'Count Every Branch', text: 'When several captures are available, compare full lines, not only the first jump.' },
+      { heading: 'Maximum Capture', text: 'International Draughts requires the line that captures the most pieces.' },
+      { heading: 'Force Bad Landings', text: 'You can offer material so the opponent must take more pieces and land badly.' },
+      { heading: 'Prepare the Reply', text: 'A forced capture is strongest when the final square is already controlled.' },
+    ],
+  },
+  {
+    id: 13, title: 'Breakthrough Patterns',
+    duration: '8 min', category: 'Tactics',
+    description: 'Clear a lane to promotion with sacrifice, timing, and blockers.',
+    content: [
+      { heading: 'Choose the Runner', text: 'Pick the piece with the clearest promotion path, not just the most advanced piece.' },
+      { heading: 'Remove the Defender', text: 'Trade or lure away the piece that controls your runner.' },
+      { heading: 'Use a Sacrifice', text: 'A small sacrifice can open the diagonal your runner needs.' },
+      { heading: 'Run at the Right Moment', text: 'Start the breakthrough when every reply either fails or gives you promotion.' },
+    ],
+  },
+  {
+    id: 14, title: 'Flying King Geometry',
+    duration: '9 min', category: 'Advanced',
+    description: 'Use long diagonals to control routes and create double threats.',
+    content: [
+      { heading: 'Long Diagonals', text: 'A flying king is strongest when it controls several routes from one square.' },
+      { heading: 'Cut the Board', text: 'Place the king where enemy pieces cannot cross safely.' },
+      { heading: 'Switch Wings', text: 'Use king mobility to attack whichever side the opponent weakens.' },
+      { heading: 'Control First', text: 'Do not chase one piece if it means abandoning the important diagonal.' },
+    ],
+  },
+  {
+    id: 15, title: 'Planning Under Time Pressure',
+    duration: '5 min', category: 'Basics',
+    description: 'Make reliable bullet and blitz decisions without calculating every line.',
+    content: [
+      { heading: 'Find Candidate Moves', text: 'Quickly choose two or three reasonable moves before deciding.' },
+      { heading: 'Check Captures First', text: 'Mandatory captures decide many fast games, so scan for them first.' },
+      { heading: 'Choose Simple Control', text: 'In time trouble, a stable move often beats a risky tactic you cannot verify.' },
+      { heading: 'Use the Clock', text: 'Do not spend all your time seeking perfection. Good and fast wins many blitz positions.' },
     ],
   },
 ]

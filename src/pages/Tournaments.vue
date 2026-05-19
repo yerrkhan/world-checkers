@@ -409,13 +409,19 @@ const today = computed(() => {
   border-radius: 50%;
   background: currentColor;
 }
-.bar-kind-bullet .bar-type-icon {
-  color: var(--red);
+.bar-kind-bullet .bar-type-icon { color: var(--red); }
+.bar-kind-bullet .bar-type-icon::before {
+  left: 0;
+  top: 5px;
+  width: 13px;
+  height: 5px;
+  border-radius: 6px 0 0 6px;
+  background: currentColor;
 }
 .bar-kind-bullet .bar-type-icon::after {
   content: "";
   position: absolute;
-  left: 9px;
+  left: 11px;
   top: 4px;
   width: 8px;
   height: 7px;
@@ -490,6 +496,22 @@ const today = computed(() => {
   height: 100%;
   background: inherit;
   clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+.bar-kind-bullet {
+  border-radius: 0 999px 999px 0;
+  padding-right: 34px;
+  clip-path: inset(0 round 0 999px 999px 0);
+}
+.bar-kind-bullet::after {
+  display: none;
+}
+.bar-kind-bullet::before {
+  left: -42px;
+  width: 36px;
+  background:
+    linear-gradient(var(--arena-brown-light), var(--arena-brown-light)) 0 1px / 34px 2px no-repeat,
+    linear-gradient(var(--arena-brown-light), var(--arena-brown-light)) 8px 8px / 27px 2px no-repeat,
+    linear-gradient(var(--arena-brown-light), var(--arena-brown-light)) 0 15px / 34px 2px no-repeat;
 }
 
 /* Tooltip */

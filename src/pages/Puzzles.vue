@@ -247,6 +247,43 @@ const basePuzzleData = (langKey) => {
 // Reactive puzzle list switches with language
 const puzzleData = computed(() => basePuzzleData(lang.value))
 
+const emptyBoard = () => Array.from({ length: 10 }, () => Array(10).fill(0))
+const puzzlePlans = {
+  1:  { from:[6,3], path:[[4,5]], caps:[[5,4]], pieces:[[6,3,-1],[5,4,1],[7,6,-1],[2,7,1]] },
+  2:  { from:[6,1], path:[[4,3],[2,5]], caps:[[5,2],[3,4]], pieces:[[6,1,-1],[5,2,1],[3,4,1],[7,8,-1]] },
+  3:  { from:[1,2], path:[[0,3]], caps:[], pieces:[[1,2,-1],[4,5,1],[6,7,-1]] },
+  4:  { from:[6,5], path:[[5,6]], caps:[], pieces:[[6,5,-1],[5,4,1],[7,2,-1],[2,3,1]] },
+  5:  { from:[6,7], path:[[4,9]], caps:[[5,8]], pieces:[[6,7,-1],[5,8,1],[7,4,-1],[3,2,1]] },
+  6:  { from:[7,4], path:[[5,6]], caps:[[6,5]], pieces:[[7,4,-1],[6,5,1],[5,2,1],[8,7,-1]] },
+  7:  { from:[5,4], path:[[2,7]], caps:[], pieces:[[5,4,-2],[7,8,-1],[3,8,1],[6,7,1]] },
+  8:  { from:[2,7], path:[[0,9]], caps:[], pieces:[[2,7,-1],[3,4,1],[6,1,-1]] },
+  9:  { from:[6,3], path:[[5,2]], caps:[], pieces:[[6,3,-1],[4,3,-1],[5,6,1],[7,8,-1]] },
+  10: { from:[7,2], path:[[4,5]], caps:[], pieces:[[7,2,-2],[7,6,-2],[3,6,1],[2,9,1]] },
+  11: { from:[6,3], path:[[4,5],[2,7]], caps:[[5,4],[3,6]], pieces:[[6,3,-1],[5,4,1],[3,6,1],[7,8,-1]] },
+  12: { from:[5,2], path:[[4,3]], caps:[], pieces:[[5,2,-1],[3,4,1],[6,7,-1],[2,7,1]] },
+  13: { from:[3,6], path:[[1,8]], caps:[[2,7]], pieces:[[3,6,-1],[2,7,1],[6,3,-1],[4,1,1]] },
+  14: { from:[6,5], path:[[5,4]], caps:[], pieces:[[6,5,-1],[4,3,1],[4,7,1],[7,2,-1]] },
+  15: { from:[6,1], path:[[3,4]], caps:[], pieces:[[6,1,-2],[2,5,1],[7,6,-1],[4,7,1]] },
+}
+for (let id = 16; id <= 25; id++) puzzlePlans[id] = puzzlePlans[id - 15] || puzzlePlans[id - 10]
+
+const buildPuzzlePosition = (id) => {
+  const plan = puzzlePlans[id]
+  const board = emptyBoard()
+  for (const [r, c, v] of plan.pieces) board[r][c] = v
+  return {
+    board,
+    move: {
+      from: { r: plan.from[0], c: plan.from[1] },
+      path: plan.path.map(([r, c]) => ({ r, c })),
+      captured: plan.caps.map(([r, c]) => ({ r, c })),
+    },
+  }
+}
+
+const sameSquare = (a, b) => a?.r === b?.r && a?.c === b?.c
+const moveDestination = (move) => move?.path?.[move.path.length - 1]
+
 // ── Solved state ───────────────────────────────────────────────────────────
 const solvedIds   = ref(new Set())
 const solvedCount = computed(() => solvedIds.value.size)
@@ -275,31 +312,19 @@ const openPuzzle = (p) => {
   puzzleSolved.value = false
   puzzleFlash.value = ''
 
-  const eng = new Draughts10()
-  for (let i = 0; i < p.seedMoves; i++) {
-    const s = eng.getState()
-    if (s.over || !s.moves.length) break
-    eng.makeMove(eng.bestMove())
-  }
-  localEngine.value = eng
-  const state = eng.getState()
-  localBoard.value = state.board
-  // Pre-compute expected best move
-  if (p.interactive && !state.over && state.moves.length) {
-    expectedMove.value = eng.bestMove()
-  } else {
-    expectedMove.value = null
-  }
+  const fixed = buildPuzzlePosition(p.id)
+  localEngine.value = null
+  localBoard.value = fixed.board
+  expectedMove.value = p.interactive ? fixed.move : null
 }
 
 // Interactive board click
 const puzzleClick = (ri, ci) => {
   if (!activePuzzle.value?.interactive) return
   if (puzzleSolved.value) return
-  const state = localEngine.value.getState()
-  if (state.over || !state.moves.length) return
+  if (!expectedMove.value) return
 
-  const mySign = state.turn === 'dark' ? 1 : -1
+  const mySign = -1
   const cell   = localBoard.value[ri][ci]
 
   if (!puzzleSel.value) {
@@ -318,27 +343,27 @@ const puzzleClick = (ri, ci) => {
 
 const pickPuzzlePiece = (r, c) => {
   puzzleSel.value = { r, c }
-  const state = localEngine.value.getState()
-  const pMoves = state.moves.filter(m => m.from.r === r && m.from.c === c)
-  puzzleTgts.value = pMoves.map(m => {
-    const dest = m.path[m.path.length - 1]
-    return { r: dest.r, c: dest.c, move: m }
-  })
+  const exp = expectedMove.value
+  if (!sameSquare(exp.from, { r, c })) {
+    puzzleTgts.value = []
+    return
+  }
+  const dest = moveDestination(exp)
+  puzzleTgts.value = [{ r: dest.r, c: dest.c, move: exp }]
 }
 
 const checkMove = (move) => {
   puzzleSel.value = null; puzzleTgts.value = []
   const exp = expectedMove.value
-  const dest = move.path[move.path.length - 1]
-  const expDest = exp ? exp.path[exp.path.length - 1] : null
+  const dest = moveDestination(move)
+  const expDest = moveDestination(exp)
 
   const isCorrect = exp &&
     move.from.r === exp.from.r && move.from.c === exp.from.c &&
     dest.r === expDest.r && dest.c === expDest.c
 
   if (isCorrect) {
-    localEngine.value.makeMove(move)
-    localBoard.value = localEngine.value.getState().board
+    applyPuzzleMove(move)
     puzzleFlash.value = 'correct'
     puzzleSolved.value = true
     solvedIds.value = new Set([...solvedIds.value, activePuzzleId.value])
@@ -347,6 +372,16 @@ const checkMove = (move) => {
     puzzleFlash.value = 'wrong'
     setTimeout(() => { puzzleFlash.value = '' }, 700)
   }
+}
+
+const applyPuzzleMove = (move) => {
+  const board = localBoard.value.map(row => [...row])
+  const piece = board[move.from.r][move.from.c]
+  const dest = moveDestination(move)
+  board[move.from.r][move.from.c] = 0
+  for (const cap of move.captured || []) board[cap.r][cap.c] = 0
+  board[dest.r][dest.c] = dest.r === 0 && piece === -1 ? -2 : piece
+  localBoard.value = board
 }
 
 const markSolved = () => {
